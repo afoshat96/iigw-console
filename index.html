@@ -5,35 +5,35 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>IIGW Capacity Console</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
+/* JEVALE-FONT-FACE */
 [hidden]{display:none!important}
 /* Layout: sticky header, controls bar, KPI grid, trend, breakdowns, tabbed detail. Filters, edit and import live in bottom sheets so the phone view stays clean. */
 :root{
-  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#f7f9fc; --hover:#eaf0f8; --line:#d8e0ea; --line-2:#e7edf4;
-  --ink:#0f1a2b; --ink-2:#4a586c; --ink-3:#6b7a90;
-  --accent:#1d5fd6; --accent-ink:#1450b8; --accent-soft:#e8f0fd; --accent-glow:rgba(29,95,214,.22); --on-accent:#ffffff;
+  --bg:#e8f0ec; --surface:#ffffff; --surface-2:#f3f7f5; --hover:#e6f1f4; --line:#d3e0da; --line-2:#e3ece8;
+  --ink:#1b2a2a; --ink-2:#465a58; --ink-3:#566966;
+  --accent:#1088b0; --accent-ink:#0b6d8e; --accent-soft:#e0f1f7; --accent-glow:rgba(16,136,176,.22); --on-accent:#ffffff;
   --up:#0e7c55; --up-soft:#e3f5ee; --down:#c8372d; --down-soft:#fcecea;
-  --scrim:rgba(10,18,32,.5); --shadow:0 1px 2px rgba(15,26,43,.05);
-  --font:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --scrim:rgba(10,24,24,.5); --shadow:none; --r:6px;
+  --font:'Jevale','Source Serif 4',Georgia,'Times New Roman',serif; --mono:'Jevale','Source Serif 4',Georgia,serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0a0f1a; --surface:#111a2a; --surface-2:#16213a; --hover:#1b2a47; --line:#243450; --line-2:#1a2840;
-  --ink:#e6edf8; --ink-2:#a2b2c9; --ink-3:#7d8ea8;
-  --accent:#4b8df8; --accent-ink:#9cc3ff; --accent-soft:#172a4d; --accent-glow:rgba(75,141,248,.3); --on-accent:#08111f;
+  --bg:#0d1818; --surface:#142425; --surface-2:#192c2e; --hover:#1e3639; --line:#27403f; --line-2:#1d3233;
+  --ink:#e3efed; --ink-2:#a5bbb8; --ink-3:#7f9794;
+  --accent:#38b2d8; --accent-ink:#8cd5ec; --accent-soft:#123845; --accent-glow:rgba(56,178,216,.3); --on-accent:#05161c;
   --up:#35d19b; --up-soft:#0f2e24; --down:#fb7a72; --down-soft:#3a1b19;
-  --scrim:rgba(0,0,0,.65); --shadow:none; color-scheme:dark}}
+  --scrim:rgba(0,0,0,.65); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0a0f1a; --surface:#111a2a; --surface-2:#16213a; --hover:#1b2a47; --line:#243450; --line-2:#1a2840;
-  --ink:#e6edf8; --ink-2:#a2b2c9; --ink-3:#7d8ea8;
-  --accent:#4b8df8; --accent-ink:#9cc3ff; --accent-soft:#172a4d; --accent-glow:rgba(75,141,248,.3); --on-accent:#08111f;
+  --bg:#0d1818; --surface:#142425; --surface-2:#192c2e; --hover:#1e3639; --line:#27403f; --line-2:#1d3233;
+  --ink:#e3efed; --ink-2:#a5bbb8; --ink-3:#7f9794;
+  --accent:#38b2d8; --accent-ink:#8cd5ec; --accent-soft:#123845; --accent-glow:rgba(56,178,216,.3); --on-accent:#05161c;
   --up:#35d19b; --up-soft:#0f2e24; --down:#fb7a72; --down-soft:#3a1b19;
-  --scrim:rgba(0,0,0,.65); --shadow:none; color-scheme:dark}
+  --scrim:rgba(0,0,0,.65); color-scheme:dark}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -249,23 +249,67 @@ th.sort[aria-sort="descending"]::after{content:" \2193";color:var(--accent)}
   .isp-meta{grid-column:auto}
   .isp-bar{grid-column:auto}
 }
+
+/* sage dashboard look */
+body::before{background:var(--bg)}
+.top{position:static;background:transparent;border:0}
+.toolbar{display:flex;justify-content:flex-end;align-items:center;gap:8px;padding-top:12px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding-top:12px}
+.titlebox,.statbox{background:var(--surface);border-radius:var(--r);padding:16px 20px;min-width:0}
+.titlebox h1{font-size:clamp(18px,5vw,26px);font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.2}
+.titlebox p{margin:6px 0 0;font-size:12.5px;color:var(--ink-3)}
+.statbox{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.statbox div{display:flex;justify-content:space-between;gap:24px;font-size:14.5px}
+.statbox span{font-weight:700}
+.statbox b{font-weight:600;white-space:nowrap;text-align:right}
+.panel,.kpi{border:0;border-radius:var(--r);box-shadow:none;padding:16px}
+.kpi{padding:14px 16px}
+.btn,.search,.field input,.field select{border-radius:var(--r)}
+.btn{box-shadow:none;border-color:transparent;background:var(--surface)}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.search{border-color:transparent}
+.chip{background:var(--surface);border-color:transparent}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg{background:var(--surface-2);border-color:transparent}
+.grid-trend{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.chartbox{position:relative;min-height:200px}
+.chartbox svg{display:block;width:100%}
+.chartbox svg text,#trend text{fill:var(--ink-3);font-family:var(--font);font-size:11px}
+.dlegend{display:flex;flex-direction:column;gap:8px;margin-top:14px;font-size:13.5px}
+.dlegend div{display:flex;align-items:center;gap:8px}
+.dlegend b{margin-left:auto;font-weight:600}
+.dlegend i{width:11px;height:11px;border-radius:2px;display:inline-block;flex:none}
+.donut-panel svg text{font-family:var(--font)}
+.panel .chip,.sheet .chip{background:var(--surface-2);border-color:var(--line)}
+.panel .chip[aria-pressed="true"],.sheet .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.panel .btn,.sheet .btn{border-color:var(--line)}
+.panel .btn.primary,.sheet .btn.primary{border-color:var(--accent)}
+.panel .search,.sheet .search{border-color:var(--line);background:var(--surface-2)}
+.ispsum{background:var(--accent-soft);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
+.ispsum .k{font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--accent-ink);overflow-wrap:anywhere}
+.ispsum .v{font-size:26px;font-weight:700;margin-top:2px;letter-spacing:-.01em}
+.ispsum .s{font-size:12.5px;color:var(--ink-2)}
+.ifgroup{margin-bottom:10px;min-width:0}
+.ifgroup h4{margin:0 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.ifbar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.chips.scrollx{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
+.chips.scrollx .chip{flex:none}
+@media (min-width:760px){
+  .hero{grid-template-columns:minmax(0,1fr) minmax(260px,auto)}
+  .grid-trend{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+}
 </style>
 </head>
 <body>
 
 
 <header class="top">
-  <div class="g top-in">
-    <div class="brand">
-      <div class="logo" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="9" width="3" height="7" rx="1" fill="var(--on-accent)"/><rect x="7.5" y="5" width="3" height="11" rx="1" fill="var(--on-accent)"/><rect x="13" y="2" width="3" height="14" rx="1" fill="var(--on-accent)"/></svg>
-      </div>
-      <div>
-        <h1>IIGW Capacity Console</h1>
-        <p>Nokia IIGW QoS &middot; all figures in Mb/s</p>
-      </div>
+  <div class="g">
+    <div class="toolbar"><button class="btn small" id="authBtn" type="button">Admin</button><div class="live" id="live" data-state="connecting" role="status"><i></i><span>Connecting</span></div></div>
+    <div class="hero">
+      <div class="titlebox"><h1>IIGW Capacity Console</h1><p>Nokia IIGW QoS &middot; all figures in Mb/s</p></div>
+      <div class="statbox" id="statbox" aria-label="Summary"></div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;flex:none"><button class="btn small" id="authBtn" type="button">Admin</button><div class="live" id="live" data-state="connecting" role="status"><i></i><span>Connecting</span></div></div>
   </div>
 </header>
 
@@ -293,6 +337,12 @@ th.sort[aria-sort="descending"]::after{content:" \2193";color:var(--accent)}
   <section class="kpis" id="kpis" aria-label="Summary"></section>
 
   <section class="panel">
+    <div class="phead"><div><h2>Capacity by day</h2><div class="sub">Tap a bar to open that day</div></div></div>
+    <div id="dayBox" class="chartbox"></div>
+  </section>
+
+  <div class="grid-trend">
+  <section class="panel">
     <div class="phead">
       <div><h2 id="trendTitle">Total capacity over time</h2><div class="sub" id="trendSub"></div></div>
     </div>
@@ -316,6 +366,11 @@ th.sort[aria-sort="descending"]::after{content:" \2193";color:var(--accent)}
     <div class="readout" id="trendReadout" hidden></div>
     <div class="hint">Tap a day to start a range, tap a second day to finish it.</div>
   </section>
+  <section class="panel donut-panel">
+    <div class="phead"><div><h2>Paid share</h2><div class="sub">Of capacity in the active range</div></div></div>
+    <div id="donutBox"></div>
+  </section>
+  </div>
 
   <div class="grid2">
     <section class="panel"><div class="phead"><h2>By gate</h2><span class="sub">Tap to filter</span></div><div class="bars" id="gateBars"></div></section>
@@ -427,7 +482,7 @@ th.sort[aria-sort="descending"]::after{content:" \2193";color:var(--accent)}
 const COL='days';
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const ZONES={1:'ZONE 1 (NBTEL)',2:'ZONE 2 (Jazeera)',3:'ZONE 3 (SUPER CELL)',4:'ZONE 4 (Quicknet)',5:'ZONE 5 (OTTO)'};
-const PALETTE=['#2f7df6','#16a37a','#e8960c','#8b5cf6','#e0488f','#0fa5c9','#f26b21','#5b6cf0','#13a89e','#c042d9'];
+const PALETTE=['#1088b0','#2fa36b','#e3a008','#7a5af0','#d9487f','#0fb5a8','#e36a2c','#5470c6','#8a6d3b','#b04ad0'];
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -442,7 +497,7 @@ const dfull=d=>{const p=d.split('-');return +p[2]+' '+MON[+p[1]-1]+' '+p[0]};
 let db=null,user=null,dl=null,canWrite=false,loaded=false,loadTimer=null;
 let DAYS={},R=[],byDate={},DATES=[];
 const F={from:null,to:null,gates:new Set(),types:new Set(),isps:new Set(),vias:new Set(),bill:null,search:''};
-const S={tab:'isp',sort:{rec:{k:'cap',dir:-1},chg:{k:'abs',dir:-1}},ispSort:'cap',open:new Set(),recLimit:60,recQ:'',chgQ:'',param:'total',period:'all',focus:null};
+const S={tab:'isp',sort:{rec:{k:'cap',dir:-1},chg:{k:'abs',dir:-1}},ispSort:'cap',open:new Set(),ispF:{},recLimit:60,recQ:'',chgQ:'',param:'total',period:'all',focus:null};
 let rangeClick=0,chartCtx=null,pending=null,syncedAt=null,sheetOpen=null;
 
 function rebuild(){
@@ -490,13 +545,13 @@ function render(){
   $('#exportBtn').hidden=!(dl&&DATES.length);
   $('#openData').hidden=!canWrite;
   if(!DATES.length){renderEmpty();return}
-  renderDateInputs();renderChips();renderQuick();renderIspList();renderActive();renderKPIs();renderTrend();
+  renderDateInputs();renderChips();renderQuick();renderIspList();renderActive();renderStat();renderKPIs();renderTrend();renderDays();renderDonut();
   renderBars('gate','g','#gateBars');renderBars('type','t','#typeBars');renderHeat();renderTabs();renderDayList();renderFooter();
 }
 function renderEmpty(){
   const msg=!db?'Live data is not available in this view. Open the page from its Claude link while signed in.':loaded?(canWrite?'No data yet. Tap Add data to import your Excel files.':'No data has been added yet.'):'Connecting to live data...';
   $('#kpis').innerHTML=`<div class="empty-msg" style="grid-column:1/-1">${esc(msg)}</div>`;
-  ['#gateBars','#typeBars','#heat','#tabBody','#trendBox'].forEach(s=>{$(s).innerHTML=''});
+  ['#gateBars','#typeBars','#heat','#tabBody','#trendBox','#dayBox','#donutBox','#statbox'].forEach(s=>{$(s).innerHTML=''});
   $('#activeStrip').hidden=true;$('#quick').innerHTML='';renderDayList();renderFooter();
 }
 function renderFooter(){
@@ -585,6 +640,55 @@ function getPeriodDates(){
   const c=cut.toISOString().slice(0,10),sub=DATES.filter(d=>d>=c);
   return sub.length?sub:DATES.slice();
 }
+function smoothPath(p){
+  const n=p.length;if(!n)return '';
+  if(n===1)return `M${p[0][0]} ${p[0][1]}`;
+  if(n===2)return `M${p[0][0]} ${p[0][1]}L${p[1][0]} ${p[1][1]}`;
+  const dx=[],m=[],t=[];
+  for(let i=0;i<n-1;i++){dx[i]=p[i+1][0]-p[i][0];m[i]=(p[i+1][1]-p[i][1])/(dx[i]||1)}
+  t[0]=m[0];t[n-1]=m[n-2];
+  for(let i=1;i<n-1;i++)t[i]=m[i-1]*m[i]<=0?0:(m[i-1]+m[i])/2;
+  for(let i=0;i<n-1;i++){if(m[i]===0){t[i]=0;t[i+1]=0}else{const a=t[i]/m[i],b=t[i+1]/m[i],h=Math.hypot(a,b);if(h>3){const k=3/h;t[i]=k*a*m[i];t[i+1]=k*b*m[i]}}}
+  let d=`M${p[0][0]} ${p[0][1]}`;
+  for(let i=0;i<n-1;i++){const x0=p[i][0],y0=p[i][1],x1=p[i+1][0],y1=p[i+1][1],h=dx[i]/3;d+=`C${x0+h} ${y0+t[i]*h} ${x1-h} ${y1-t[i+1]*h} ${x1} ${y1}`}
+  return d;
+}
+function niceScale(max){
+  if(!(max>0))return {top:1,step:.25};
+  const e=Math.pow(10,Math.floor(Math.log10(max/4)));
+  const step=[1,2,2.5,5,10].map(k=>k*e).find(x=>max/x<=5)||10*e;
+  return {top:Math.ceil(max/step)*step,step};
+}
+function renderStat(){
+  const rows=getRows(),tot=sum(rows),fr=sum(rows.filter(r=>r.f));
+  $('#statbox').innerHTML=`<div><span>Range:</span><b>${esc(rangeText())}</b></div><div><span>Total:</span><b class="num">${rate(tot)}</b></div><div><span>Free:</span><b class="num">${tot?(fr/tot*100).toFixed(1):0}%</b></div>`;
+}
+function renderDays(){
+  const box=$('#dayBox'),dates=getPeriodDates();
+  if(!dates.length){box.innerHTML='';return}
+  const tm=new Map();for(const r of R)if(match(r,['date']))tm.set(r.d,(tm.get(r.d)||0)+r.c);
+  const vals=dates.map(d=>tm.get(d)||0),max=Math.max(...vals,0);
+  const W=Math.max(280,Math.floor(box.clientWidth||340)),H=W<500?230:280,m={l:46,r:8,t:22,b:28};
+  const sc=niceScale(max),slot=(W-m.l-m.r)/dates.length,bw=Math.max(6,Math.min(58,slot*.64));
+  const Y=v=>m.t+(1-v/sc.top)*(H-m.t-m.b);
+  let g='';
+  for(let v=0;v<=sc.top+sc.step/2;v+=sc.step){const y=Y(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" style="stroke:var(--line-2)"/><text x="${m.l-6}" y="${y+4}" text-anchor="end">${axisFmt(v)}</text>`}
+  const showVal=slot>=40,xstep=Math.max(1,Math.ceil(46/slot));
+  let bars='';
+  dates.forEach((d,i)=>{
+    const cx=m.l+slot*(i+.5),v=vals[i],y=Y(v),inR=d>=F.from&&d<=F.to;
+    bars+=`<rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${Math.max(0,H-m.b-y)}" style="fill:${inR?'var(--accent)':'color-mix(in srgb,var(--accent) 38%,var(--surface))'}"/>`;
+    if(showVal||(d===F.to&&F.from===F.to))bars+=`<text x="${cx}" y="${y-6}" text-anchor="middle" style="fill:var(--ink-2)">${v>=1e6?(v/1e6).toFixed(2)+'T':axisFmt(v)}</text>`;
+    if(i%xstep===0||i===dates.length-1)bars+=`<text x="${cx}" y="${H-9}" text-anchor="middle">${dlab(d)}</text>`;
+    bars+=`<rect data-bar="${d}" x="${m.l+slot*i}" y="${m.t}" width="${slot}" height="${H-m.t-m.b}" fill="transparent" style="cursor:pointer"><title>${dfull(d)}: ${rate(v)}</title></rect>`;
+  });
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Capacity by day">${g}${bars}<line x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}" style="stroke:var(--line)"/></svg>`;
+}
+function renderDonut(){
+  const rows=getRows(),tot=sum(rows),fr=sum(rows.filter(r=>r.f)),pd=tot-fr,pct=tot?pd/tot*100:0;
+  const r=74,sw=26,C=2*Math.PI*r,len=C*pct/100;
+  $('#donutBox').innerHTML=`<svg viewBox="0 0 200 200" width="100%" style="max-width:240px;display:block;margin:0 auto" role="img" aria-label="Paid share ${pct.toFixed(1)} percent"><circle cx="100" cy="100" r="${r}" fill="none" style="stroke:var(--line-2)" stroke-width="${sw}"/><circle cx="100" cy="100" r="${r}" fill="none" style="stroke:var(--accent)" stroke-width="${sw}" stroke-dasharray="${len} ${C-len}" transform="rotate(-90 100 100)"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" style="fill:var(--ink)" font-size="40" font-weight="500">${Math.round(pct)}%</text></svg><div class="dlegend"><div><i style="background:var(--accent)"></i>Paid<b class="num">${rate(pd)}</b></div><div><i style="background:var(--line)"></i>Free<b class="num">${rate(fr)}</b></div></div>`;
+}
 function renderTrend(){
   const box=$('#trendBox'),dates=getPeriodDates();
   if(!dates.length)return;
@@ -617,7 +721,7 @@ function renderTrend(){
   let grid='';
   for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Y(v);grid+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" style="stroke:var(--line-2)"/><text x="${m.l-6}" y="${y+4}" text-anchor="end">${axisFmt(v)}</text>`}
   const step=Math.max(1,Math.ceil(dates.length/Math.max(1,Math.floor((W-m.l-m.r)/58))));
-  dates.forEach((d,i)=>{if(i%step===0||i===dates.length-1)grid+=`<text x="${X(d)}" y="${H-9}" text-anchor="middle">${dlab(d)}</text>`});
+  dates.forEach((d,i)=>{if(i%step===0||i===dates.length-1)grid+=`<text x="${X(d)}" y="${H-9}" text-anchor="${X(d)>W-26?'end':'middle'}">${dlab(d)}</text>`});
   let band='';
   if(F.from&&F.to){
     const a=Math.min(X(F.from),X(F.to)),b=Math.max(X(F.from),X(F.to));
@@ -626,12 +730,15 @@ function renderTrend(){
   let lines='',dots='';
   list.forEach(s=>{
     const pts=dates.map(d=>({d,v:data[s.id][d]||0}));
-    let path='';
-    pts.forEach((p,i)=>{const gap=i>0&&(Date.parse(p.d)-Date.parse(pts[i-1].d))/864e5>1.5;path+=(i===0||gap?'M':'L')+X(p.d)+' '+Y(p.v)+' '});
+    const segs=[];let cur=[];
+    pts.forEach((p,i)=>{const gap=i>0&&(Date.parse(p.d)-Date.parse(pts[i-1].d))/864e5>1.5;if(gap){segs.push(cur);cur=[]}cur.push([X(p.d),Y(p.v)])});
+    segs.push(cur);
+    const path=segs.map(smoothPath).join(' ');
     lines+=`<path d="${path}" fill="none" style="stroke:${s.color}" stroke-width="${S.param==='total'?2.6:2}" stroke-linejoin="round"/>`;
     pts.forEach(p=>{
       const inR=p.d>=F.from&&p.d<=F.to,bound=p.d===F.from||p.d===F.to;
-      dots+=`<circle cx="${X(p.d)}" cy="${Y(p.v)}" r="${bound?5.2:3.8}" style="fill:${inR?s.color:'var(--surface)'};stroke:${s.color}" stroke-width="2"/>`;
+      const z=bound?10:7;
+      dots+=`<rect x="${X(p.d)-z/2}" y="${Y(p.v)-z/2}" width="${z}" height="${z}" style="fill:${inR?s.color:'var(--surface)'};stroke:${s.color}" stroke-width="2"/>`;
     });
   });
   const focus=S.focus&&dates.includes(S.focus)?S.focus:(dates.includes(F.to)?F.to:dates[dates.length-1]);
@@ -705,6 +812,27 @@ function actBtns(r){
 }
 const billTag=r=>r.f?'<span class="bill free">Free</span>':'<span class="bill paid">Paid</span>';
 function exportBtnHTML(){return dl?'<button class="btn small" id="exportBtn2" type="button">Export Excel</button>':''}
+const ispFor=n=>S.ispF[n]||(S.ispF[n]={d:new Set(),g:new Set(),t:new Set()});
+function ispDetail(o,sel){
+  const f=ispFor(o.i);
+  const pass=(r,skip)=>(skip==='d'||!f.d.size||f.d.has(r.d))&&(skip==='g'||!f.g.size||f.g.has(r.g))&&(skip==='t'||!f.t.size||f.t.has(r.t));
+  const facet=(skip,key)=>{const m=new Map();for(const r of o.rows)if(pass(r,skip))m.set(r[key],(m.get(r[key])||0)+r.c);f[key].forEach(v=>{if(!m.has(v))m.set(v,0)});return m};
+  const chips=(k,items)=>items.map(([v,c])=>`<button class="chip" type="button" data-ifi="${esc(o.i)}" data-ifk="${k}" data-ifv="${esc(v)}" aria-pressed="${f[k].has(v)}"><span>${esc(k==='d'?dlab(v):v)}</span><small class="num">${rate(c).replace(' ','')}</small></button>`).join('');
+  const dItems=[...facet('d','d')].sort((a,b)=>a[0].localeCompare(b[0]));
+  const gItems=[...facet('g','g')].sort((a,b)=>b[1]-a[1]);
+  const tItems=[...facet('t','t')].sort((a,b)=>b[1]-a[1]);
+  const rows=o.rows.filter(r=>pass(r)).sort((a,b)=>b.c-a.c||a.d.localeCompare(b.d));
+  const tot=sum(rows),days=new Set(rows.map(r=>r.d)).size;
+  const title=[o.i,...f.g,...f.t,...[...f.d].sort().map(dlab)].join(' · ');
+  const any=f.d.size+f.g.size+f.t.size>0;
+  return `<div class="isp-detail">
+    <div class="ispsum"><div class="k">${esc(title)}</div><div class="v num">${rate(tot)}</div><div class="s">${rows.length} record${rows.length===1?'':'s'}${days>1?' · '+days+' days · avg '+rate(tot/days)+' per day':''}</div></div>
+    <div class="ifgroup"><h4>Date</h4><div class="chips scrollx">${chips('d',dItems)}</div></div>
+    <div class="ifgroup"><h4>Gate</h4><div class="chips">${chips('g',gItems)}</div></div>
+    <div class="ifgroup"><h4>Service</h4><div class="chips">${chips('t',tItems)}</div></div>
+    <div class="ifbar">${any?`<button class="btn small" type="button" data-ifclear="${esc(o.i)}">Clear selection</button>`:''}<button class="btn small" type="button" data-focus="${esc(o.i)}">${sel?'Remove page filter':'Filter whole page to this ISP'}</button></div>
+    <div class="scroll"><table><thead><tr><th>Date</th><th>Gate</th><th>Service</th><th>Billing</th><th>Upstream</th><th class="r">Mb/s</th>${canWrite?'<th></th>':''}</tr></thead><tbody>${rows.map(r=>`<tr><td>${r.d}</td><td>${esc(r.g)}</td><td>${esc(r.t)}</td><td>${billTag(r)}</td><td>${esc(r.v||'Direct')}</td><td class="r num">${fmtN(r.c)}</td>${canWrite?`<td>${actBtns(r)}</td>`:''}</tr>`).join('')||'<tr><td colspan="7" class="sub">No records for this selection.</td></tr>'}</tbody></table></div></div>`;
+}
 function tabIsp(){
   const rows=getRows(['isp']),tot=sum(rows),p=prevDate();
   const prev=p?group(R.filter(r=>r.d===p&&match(r,['date','isp'])),'i'):new Map();
@@ -722,11 +850,7 @@ function tabIsp(){
       <span class="isp-name">${esc(o.i)}</span><span class="isp-cap num">${rate(o.cap)}</span>
       <span class="isp-bar"><i style="width:${Math.max(2,o.cap/max*100).toFixed(1)}%"></i></span>
       <span class="isp-meta"><span>${o.g.size} gate${o.g.size>1?'s':''}</span><span class="num">${tot?(o.cap/tot*100).toFixed(1):0}%</span>${p?`<span class="num ${o.delta>0?'up':o.delta<0?'dn':''}">${o.delta>0?'+':o.delta<0?'&minus;':''}${fmtN(Math.abs(o.delta))}</span>`:''}</span></button>`;
-    if(open){
-      const det=o.rows.slice().sort((a,b)=>b.c-a.c||a.d.localeCompare(b.d));
-      h+=`<div class="isp-detail"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap"><span class="mini">${[...o.t].sort().map(t=>`<span class="tag">${esc(t)}</span>`).join(' ')}</span><button class="btn small" type="button" data-focus="${esc(o.i)}">${sel?'Remove filter':'Filter to this ISP'}</button></div>
-      <div class="scroll"><table><thead><tr><th>Date</th><th>Gate</th><th>Service</th><th>Billing</th><th>Upstream</th><th class="r">Mb/s</th>${canWrite?'<th></th>':''}</tr></thead><tbody>${det.map(r=>`<tr><td>${r.d}</td><td>${esc(r.g)}</td><td>${esc(r.t)}</td><td>${billTag(r)}</td><td>${esc(r.v||'Direct')}</td><td class="r num">${fmtN(r.c)}</td>${canWrite?`<td>${actBtns(r)}</td>`:''}</tr>`).join('')}</tbody></table></div></div>`;
-    }
+    if(open)h+=ispDetail(o,sel);
     h+='</div>';
   }
   return h+'</div>'+(list.length?'':'<div class="empty-msg">No matching records.</div>');
@@ -971,6 +1095,7 @@ document.addEventListener('click',e=>{
   const t=e.target;let el;
   if(el=t.closest('[data-trend-param]')){S.param=el.dataset.trendParam;renderTrend();return}
   if(el=t.closest('[data-trend-period]')){S.period=el.dataset.trendPeriod;renderTrend();return}
+  if(el=t.closest('[data-bar]')){const d=el.dataset.bar;setRange(d,d);return}
   if(t.closest('#trend')){
     const d=dateFromX(e.clientX);if(!d)return;
     S.focus=d;
@@ -1010,6 +1135,8 @@ document.addEventListener('click',e=>{
     F.from=DATES[0]||null;F.to=DATES[DATES.length-1]||null;rangeClick=0;render();return;
   }
   if(el=t.closest('[data-focus]')){const n=el.dataset.focus;F.isps.has(n)?F.isps.delete(n):F.isps.add(n);render();return}
+  if(el=t.closest('[data-ifk]')){const f=ispFor(el.dataset.ifi),set=f[el.dataset.ifk],v=el.dataset.ifv;set.has(v)?set.delete(v):set.add(v);renderTabs();return}
+  if(el=t.closest('[data-ifclear]')){const f=ispFor(el.dataset.ifclear);f.d.clear();f.g.clear();f.t.clear();renderTabs();return}
   if(el=t.closest('[data-ispsort]')){S.ispSort=el.dataset.ispsort;renderTabs();return}
   if(el=t.closest('[data-isp]')){const n=el.dataset.isp;S.open.has(n)?S.open.delete(n):S.open.add(n);renderTabs();return}
   if(el=t.closest('[data-sort]')){
@@ -1061,7 +1188,7 @@ const drop=$('#drop');
 ['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over')}));
 ['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over')}));
 drop.addEventListener('drop',e=>{if(e.dataTransfer.files.length)handleFiles([...e.dataTransfer.files])});
-let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(DATES.length)renderTrend()},90)}).observe($('#trendBox'));
+let rz;const ro2=new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(DATES.length){renderTrend();renderDays()}},90)});ro2.observe($('#trendBox'));ro2.observe($('#dayBox'));
 
 /* firebase live data */
 const FIREBASE_CONFIG={apiKey:"AIzaSyC8jOeuxztPHCq6_gT60BYumlxyj4A-qck",authDomain:"iigw-capacity-console.firebaseapp.com",projectId:"iigw-capacity-console",storageBucket:"iigw-capacity-console.firebasestorage.app",messagingSenderId:"693181341723",appId:"1:693181341723:web:8f009444e6d075826198be"};
