@@ -7,6 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -963,29 +964,150 @@ function confirmTap(el,fn){
 }
 
 /* export */
+/* Template-format workbook builder. rows: [{d:'YYYY-MM-DD',g,s,i,v,t,c,o?}] */
+async function buildTemplateWorkbook(ExcelJS,rows,ZONES){
+  const MONF=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const ord=n=>n+((n%100>=11&&n%100<=13)?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th'));
+  const NF='_(* #,##0_);_(* (#,##0);_(* "-"??_);_(@_)';
+  const solid=rgb=>({type:'pattern',pattern:'solid',fgColor:{argb:'FF'+rgb}});
+  const thin={style:'thin'},BD={left:thin,right:thin,top:thin,bottom:thin};
+  const BLUE='9DC3E6',LBLUE='DEEBF7',NAVY='203864',DNAVY='002060';
+  const dp=d=>{const p=d.split('-');return{y:+p[0],m:+p[1]-1,n:+p[2]}};
+  const longD=d=>{const p=dp(d);return ord(p.n)+' of '+MONF[p.m]+' '+p.y};
+  const shortD=d=>{const p=dp(d);return ord(p.n)+' of '+MONF[p.m].slice(0,3)+'_'+p.y};
+  const sumLbl=(d,multiY)=>{const p=dp(d);return ord(p.n)+' of '+MONF[p.m].slice(0,3)+(multiY?' '+p.y:'')};
+  const REVZ={};Object.keys(ZONES).forEach(k=>REVZ[ZONES[k]]='ZONE '+k);
+  const t1=r=>{if(r.o)return r.o;const i=REVZ[r.i]||r.i;return r.v?i+'\nOVER '+r.v:i};
+  const FREEP=/FREE/i,cleanSec=x=>String(x).replace(/_[^_]*_?\s*\d{4}\s*$/,'').trim();
+  const fmtTot=v=>(Math.round(v*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
+
+  const dates=[...new Set(rows.map(r=>r.d))].sort();
+  const byD={};rows.forEach(r=>{(byD[r.d]=byD[r.d]||[]).push(r)});
+  const multiY=new Set(dates.map(d=>d.slice(0,4))).size>1;
+  const wb=new ExcelJS.Workbook();wb.creator='IIGW Capacity Console';
+  const style=(c,o)=>{if(o.font)c.font=Object.assign({name:'Calibri',size:11},o.font);if(o.fill)c.fill=o.fill;if(o.al)c.alignment=o.al;if(o.bd)c.border=o.bd;if(o.nf)c.numFmt=o.nf};
+  const paint=(ws,r1,c1,r2,c2,o)=>{for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)style(ws.getCell(r,c),o)};
+  const L=n=>String.fromCharCode(64+n);
+
+  /* ---- day sheets ---- */
+  for(const d of dates){
+    const list=byD[d],ws=wb.addWorksheet(longD(d),{properties:{tabColor:{argb:'FF92D050'},defaultRowHeight:14.5}});
+    [3.36328125,8.7265625,31.6328125,32.90625,15.36328125,20.6328125,16.54296875,9.7265625,9.7265625].forEach((w,i)=>ws.getColumn(i+1).width=w);
+    const ctr={horizontal:'center',vertical:'middle'},ctrW={horizontal:'center',vertical:'middle',wrapText:true};
+    // title
+    ws.mergeCells('B1:G2');
+    ws.getCell('B1').value='Total QoS of each ISPs and Zones till end of '+shortD(d)+'\nover IIGW Nokia';
+    paint(ws,1,2,2,7,{font:{bold:true,size:18},fill:solid(BLUE),al:ctrW,bd:BD});
+    ws.getRow(2).height=39.5;
+    // sections in first-appearance order
+    const secs=[];const sm=new Map();
+    list.forEach(r=>{const k=r.s||'';if(!sm.has(k)){sm.set(k,[]);secs.push(k)}sm.get(k).push(r)});
+    let row=4;
+    for(const s0 of secs){
+      const items=sm.get(s0),s=cleanSec(s0);
+      ws.mergeCells(row,2,row,7);ws.getCell(row,2).value=s+'_ '+shortD(d);
+      paint(ws,row,2,row,7,{font:{bold:true,size:14},fill:solid(BLUE),al:ctr,bd:BD});ws.getRow(row).height=18.5;row++;
+      ['Gate','T1 ISP','Type','Capacity','Total Per Gate','Total'].forEach((h,j)=>ws.getCell(row,2+j).value=h);
+      paint(ws,row,2,row,7,{font:{bold:true,size:14},fill:solid(BLUE),al:ctr,bd:BD});ws.getRow(row).height=18.5;row++;
+      const first=row,last=row+items.length-1;
+      items.forEach((r,k)=>{
+        const x=row+k,txt=t1(r);
+        ws.getCell(x,2).value=r.g;ws.getCell(x,3).value=txt;ws.getCell(x,4).value=r.t;ws.getCell(x,5).value=r.c;
+        ws.getRow(x).height=/\n/.test(txt)?37:18.5;
+        style(ws.getCell(x,2),{font:{bold:true,size:14},fill:solid(BLUE),al:ctr,bd:BD});
+        style(ws.getCell(x,3),{font:{bold:true,size:14},fill:solid(LBLUE),al:ctrW,bd:BD});
+        style(ws.getCell(x,4),{font:{bold:true,size:14},fill:solid(LBLUE),al:ctr,bd:BD});
+        [5,6,7].forEach(cc=>style(ws.getCell(x,cc),{font:{bold:true,size:14},fill:solid(LBLUE),al:ctr,bd:BD,nf:NF}));
+      });
+      // per-gate groups (consecutive)
+      let a=0;
+      while(a<items.length){
+        let b=a;while(b+1<items.length&&items[b+1].g===items[a].g)b++;
+        const sum=items.slice(a,b+1).reduce((p,q)=>p+q.c,0),ra=first+a,rb=first+b;
+        if(b>a&&FREEP.test(s)){for(let q=a;q<=b;q++)ws.getCell(first+q,6).value=items[q].c}
+        else if(b>a){ws.mergeCells(ra,6,rb,6);ws.getCell(ra,6).value={formula:`SUM(E${ra}:E${rb})`,result:sum}}
+        else ws.getCell(ra,6).value=sum;
+        a=b+1;
+      }
+      const tot=items.reduce((p,q)=>p+q.c,0);
+      if(items.length>1){ws.mergeCells(first,7,last,7);ws.getCell(first,7).value={formula:`SUM(E${first}:E${last})`,result:tot}}
+      else ws.getCell(first,7).value=tot;
+      row=last+1;
+    }
+    row++;
+    const grand=list.reduce((p,q)=>p+q.c,0);
+    ws.mergeCells(row,2,row+1,7);
+    ws.getCell(row,2).value='Note: Total of IIGW till end of '+shortD(d)+' is '+fmtTot(grand)+' Mb/s';
+    paint(ws,row,2,row+1,7,{font:{bold:true,size:18},fill:solid(BLUE),al:ctrW,bd:BD});
+    ws.getRow(row).height=25.5;ws.getRow(row+1).height=25.5;
+  }
+
+  /* ---- Total Capacity per Gate ---- */
+  const hdr={font:{bold:true,size:12,color:{argb:'FFFFFFFF'}},fill:solid(NAVY),al:{horizontal:'center'},bd:{bottom:thin}};
+  const gates=[...new Set(rows.map(r=>r.g))].sort();
+  const wg=wb.addWorksheet('Total Capacity per Gate',{properties:{tabColor:{argb:'FF'+NAVY},defaultRowHeight:14.5}});
+  const wt=wb.addWorksheet('Total Capacity per Type',{properties:{tabColor:{argb:'FF'+NAVY},defaultRowHeight:14.5}});
+  const W=(ws,c,w)=>ws.getColumn(c).width=w;
+  const white11={size:11,color:{argb:'FFFFFFFF'}};
+  dates.forEach((d,k)=>{
+    const c1=k*2+1,c2=c1+1,lab=sumLbl(d,multiY),list=byD[d];
+    W(wg,c1,10.7265625);W(wg,c2,15.54296875);
+    wg.mergeCells(1,c1,1,c2);wg.getCell(1,c1).value=lab;paint(wg,1,c1,1,c2,hdr);
+    wg.getCell(2,c1).value='Gate';wg.getCell(2,c2).value='Sum of Capacity';
+    paint(wg,2,c1,2,c2,{font:white11,fill:solid(DNAVY),al:{horizontal:'center',vertical:'middle'},bd:BD});
+    wg.getCell(2,c2).numFmt=NF;
+    gates.forEach((g,j)=>{const x=3+j;wg.getCell(x,c1).value=g;wg.getCell(x,c2).value=list.filter(r=>r.g===g).reduce((p,q)=>p+q.c,0);
+      style(wg.getCell(x,c1),{font:{size:11},al:{horizontal:'center',vertical:'middle'},bd:BD});
+      style(wg.getCell(x,c2),{font:{size:11},al:{horizontal:'center',vertical:'middle'},bd:BD,nf:NF})});
+    const gx=3+gates.length;wg.getCell(gx,c1).value='Grand Total';wg.getCell(gx,c2).value=list.reduce((p,q)=>p+q.c,0);
+    paint(wg,gx,c1,gx,c2,{font:white11,fill:solid(DNAVY),al:{horizontal:'center',vertical:'middle'},bd:BD});wg.getCell(gx,c2).numFmt=NF;
+  });
+  wg.getRow(1).height=15.5;
+
+  /* ---- Total Capacity per Type ---- */
+  const KNOWN=['ANTI-DDOS FREE','BTB','CDN','FREE','FTTH','FTTX','IXP (CDN)','WIFI'],KNOWN_EL=['EL-FTTH','EL-FREE-FTTH','EL-WIFI-FREE','EL-WIFI'];
+  const all=[...new Set(rows.map(r=>r.t))];
+  const isEL=t=>/^EL-/i.test(t);
+  const ordr=(arr,known)=>[...known.filter(t=>arr.includes(t)),...arr.filter(t=>!known.includes(t)).sort()];
+  const itpc=ordr(all.filter(t=>!isEL(t)),KNOWN),el=ordr(all.filter(isEL),KNOWN_EL),types=[...itpc,...el];
+  const nT=types.length,gr=3+nT,hr=gr+2;
+  const tw=Math.max(15.6328125,...types.map(t=>t.length*1.15+2));
+  dates.forEach((d,k)=>{
+    const c1=k*2+1,c2=c1+1,lab=sumLbl(d,multiY),list=byD[d];
+    W(wt,c1,tw);W(wt,c2,14.26953125);
+    wt.mergeCells(1,c1,1,c2);wt.getCell(1,c1).value=lab;paint(wt,1,c1,1,c2,hdr);
+    wt.getCell(2,c1).value='Type of Service';wt.getCell(2,c2).value='Sum of Capacity';
+    paint(wt,2,c1,2,c2,{font:white11,fill:solid(NAVY),bd:BD});
+    types.forEach((t,j)=>{const x=3+j;wt.getCell(x,c1).value=t;wt.getCell(x,c2).value=list.filter(r=>r.t===t).reduce((p,q)=>p+q.c,0);
+      style(wt.getCell(x,c1),{font:{size:11},al:{horizontal:'left'},bd:BD});style(wt.getCell(x,c2),{font:{size:11},bd:BD,nf:NF})});
+    wt.getCell(gr,c1).value='Grand Total';wt.getCell(gr,c2).value=list.reduce((p,q)=>p+q.c,0);
+    style(wt.getCell(gr,c1),{font:white11,fill:solid(NAVY),al:{horizontal:'left'},bd:BD});style(wt.getCell(gr,c2),{font:white11,fill:solid(NAVY),bd:BD,nf:NF});
+    style(wt.getCell(gr+1,c1),{font:white11,al:{horizontal:'left'},bd:{bottom:thin}});style(wt.getCell(gr+1,c2),{font:white11,bd:{bottom:thin},nf:NF});
+    wt.mergeCells(hr,c1,hr,c2);wt.getCell(hr,c1).value={formula:`${L(c1)}1`,result:lab};paint(wt,hr,c1,hr,c2,hdr);
+    const sumR=(a,b)=>list.filter(r=>types.slice(a,b).includes(r.t)).reduce((p,q)=>p+q.c,0);
+    const cl=L(c2);
+    [['ITPC',0,itpc.length],['EL',itpc.length,nT]].forEach(([nm,a,b],q)=>{const x=hr+1+q;
+      wt.getCell(x,c1).value=nm;style(wt.getCell(x,c1),{font:white11,fill:solid(NAVY),bd:BD});
+      wt.getCell(x,c2).value=b>a?{formula:`SUM(${cl}${3+a}:${cl}${2+b})`,result:sumR(a,b)}:0;
+      style(wt.getCell(x,c2),{font:{size:11},bd:BD,nf:NF})});
+  });
+  wt.getRow(1).height=15.5;wt.getRow(hr).height=15.5;
+  return wb;
+}
+
 async function exportXlsx(){
   const rows=getRows();
   if(!rows.length){toast('No records match the current filters');return}
-  if(!window.XLSX){toast('The Excel library did not load. Check your connection.');return}
-  const recs=rows.map(r=>({'Date':r.d,'Gate':r.g,'ISP':r.i,'Upstream (Via)':r.v||'Direct','Service Type':r.t,'Billing':r.f?'Free':'Paid','Section':r.s,'Capacity (Mb/s)':r.c}));
-  const ws1=XLSX.utils.json_to_sheet(recs);
-  ws1['!cols']=[{wch:12},{wch:8},{wch:30},{wch:18},{wch:18},{wch:10},{wch:25},{wch:18}];
-  const total=sum(rows),gm=group(rows,'g'),tm=group(rows,'t'),gl=[...gm.keys()].sort(),tl=[...tm.keys()].sort();
-  const aoa=[['IIGW CAPACITY SUMMARY'],['Date coverage',rangeText()],['Total records',rows.length],['Total capacity (Mb/s)',total],['Formatted',rate(total)],['Free capacity (Mb/s)',sum(rows.filter(r=>r.f))],['Paid capacity (Mb/s)',sum(rows.filter(r=>!r.f))],[],['TOTALS BY GATE'],['Gate','Capacity (Mb/s)','Rate','Share (%)','Records']];
-  gl.forEach(g=>{const c=gm.get(g);aoa.push([g,c,rate(c),total?+(c/total*100).toFixed(2):0,rows.filter(r=>r.g===g).length])});
-  aoa.push(['Total',total,rate(total),100,rows.length],[],['TOTALS BY SERVICE'],['Service','Capacity (Mb/s)','Rate','Share (%)','Records']);
-  tl.forEach(t=>{const c=tm.get(t);aoa.push([t,c,rate(c),total?+(c/total*100).toFixed(2):0,rows.filter(r=>r.t===t).length])});
-  aoa.push(['Total',total,rate(total),100,rows.length],[],['GATE x SERVICE MATRIX (Mb/s)'],['Gate',...tl,'Total']);
-  const cm=new Map();rows.forEach(r=>{const k=r.g+'\u0001'+r.t;cm.set(k,(cm.get(k)||0)+r.c)});
-  gl.forEach(g=>{let s=0;const line=[g];tl.forEach(t=>{const v=cm.get(g+'\u0001'+t)||0;line.push(v);s+=v});line.push(s);aoa.push(line)});
-  aoa.push(['Total',...tl.map(t=>tm.get(t)||0),total]);
-  const ws2=XLSX.utils.aoa_to_sheet(aoa);ws2['!cols']=[{wch:24},{wch:18},{wch:16},{wch:12},{wch:12}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws1,'Filtered_Capacity');XLSX.utils.book_append_sheet(wb,ws2,'Summary');
-  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  const tag=single()?F.from:F.from+'_to_'+F.to;
-  try{await dl.save({filename:`IIGW_Capacity_${tag}.xlsx`,data:new Blob([out])});toast('Export ready')}
-  catch(e){if(!e||e.code!=='declined')toast('Could not export the file here')}
+  if(!window.ExcelJS){toast('The Excel library did not load. Check your connection.');return}
+  toast('Preparing Excel file…');
+  try{
+    const wb=await buildTemplateWorkbook(ExcelJS,rows,ZONES);
+    const out=await wb.xlsx.writeBuffer();
+    const ds=[...new Set(rows.map(r=>r.d))].sort();
+    const tag=ds.length===1?ds[0]:ds[0]+'_to_'+ds[ds.length-1];
+    await dl.save({filename:`ISPs_Total_QoS_${tag}.xlsx`,data:new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})});
+    toast('Export ready');
+  }catch(e){if(!e||e.code!=='declined')toast('Could not export the file here')}
 }
 
 /* import */
