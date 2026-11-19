@@ -442,6 +442,17 @@ body::before{background:var(--bg)}
   <div class="sh-foot"><span></span><button class="btn primary" id="saveRecord" type="button">Save</button></div>
 </section>
 
+<!-- New day -->
+<section class="sheet" id="daySheet" hidden role="dialog" aria-modal="true" aria-label="New day">
+  <div class="sh-head"><h2>New day</h2><button class="btn small" id="closeDay" type="button">Cancel</button></div>
+  <div class="sh-body">
+    <div class="field"><label for="ndDate">New date</label><input type="date" id="ndDate"></div>
+    <div class="field"><label for="ndFrom">Copy records from</label><select id="ndFrom"></select></div>
+    <p class="sub">All records are copied with the same capacities. After creating, open the day and tap a record to change only the numbers that moved.</p>
+  </div>
+  <div class="sh-foot"><span></span><button class="btn primary" id="createDay" type="button">Create day</button></div>
+</section>
+
 <!-- Data -->
 <section class="sheet" id="dataSheet" hidden role="dialog" aria-modal="true" aria-label="Add data">
   <div class="sh-head"><h2>Add data</h2><button class="btn small" id="closeData" type="button">Close</button></div>
@@ -863,7 +874,7 @@ function tabRec(){
   rows=rows.slice().sort(cmp(S.sort.rec,(r,k)=>({date:r.d,g:r.g,isp:r.i,via:r.v||'Direct',type:r.t,bill:r.f?0:1,sec:r.s,cap:r.c})[k]));
   const shown=rows.slice(0,S.recLimit);
   let h=`<div class="tools"><input class="search" type="search" id="recQ" placeholder="Filter these records" value="${esc(S.recQ)}" aria-label="Filter records">
-    ${canWrite?'<button class="btn small primary" type="button" id="addNewRecord">New record</button>':''}${exportBtnHTML()}</div>
+    ${canWrite?'<button class="btn small primary" type="button" id="newDay">New day</button><button class="btn small primary" type="button" id="addNewRecord">New record</button>':''}${exportBtnHTML()}</div>
     <div class="sub" style="margin-bottom:6px">${rows.length} records, ${fmtN(sum(rows))} Mb/s</div>
     <div class="scroll"><table>${sortHead('rec',[['date','Date'],['g','Gate'],['isp','ISP'],['via','Upstream'],['type','Service'],['bill','Billing'],['sec','Section'],['cap','Mb/s','r']]).replace('</tr>',canWrite?'<th></th></tr>':'</tr>')}<tbody>`+
     shown.map(r=>`<tr><td>${r.d}</td><td><b>${esc(r.g)}</b></td><td>${esc(r.i)}</td><td>${esc(r.v||'Direct')}</td><td><span class="tag">${esc(r.t)}</span></td><td>${billTag(r)}</td><td style="color:var(--ink-3)">${esc(r.s)}</td><td class="r num" style="font-weight:600">${fmtN(r.c)}</td>${canWrite?`<td>${actBtns(r)}</td>`:''}</tr>`).join('')+'</tbody></table></div>';
@@ -926,6 +937,21 @@ function openRecord(mode,r){
 }
 
 /* writes */
+function nextDay(d){const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+1);return t.toISOString().slice(0,10)}
+function openNewDay(){
+  if(!DATES.length){toast('Import data first, then you can copy days');return}
+  const last=DATES[DATES.length-1];
+  openSheet('daySheet');
+  $('#ndDate').value=nextDay(last);
+  $('#ndFrom').innerHTML=DATES.slice().reverse().slice(0,60).map(d=>`<option value="${d}">${d} (${DAYS[d].rows.length} records)</option>`).join('');
+}
+async function createDay(){
+  const d=$('#ndDate').value,src=$('#ndFrom').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){toast('Pick a date');return}
+  if(DAYS[d]){toast('That day already exists. Edit it instead.');return}
+  if(!DAYS[src]){toast('Pick a day to copy from');return}
+  if(await guard(()=>saveDay(d,cloneRows(src)),'Day created. Tap a record to edit its capacity.')){closeSheets();F.from=F.to=d;rangeClick=0;S.focus=d;render()}
+}
 const cloneRows=d=>(DAYS[d]?DAYS[d].rows:[]).map(r=>({...r}));
 async function saveDay(d,rows){
   if(!db)throw new Error('offline');
@@ -1276,6 +1302,9 @@ document.addEventListener('click',e=>{
     const d=el.dataset.remove;
     confirmTap(el,()=>guard(()=>db.doc(COL+'/'+d).delete(),'Day deleted'));return;
   }
+  if(t.closest('#newDay')){openNewDay();return}
+  if(t.closest('#createDay')){createDay();return}
+  if(t.closest('#closeDay')){closeSheets();return}
   if(t.closest('#addNewRecord')){openRecord('add');return}
   if(t.closest('#saveRecord')){saveRecord();return}
   if(t.closest('#closeRec')){closeSheets();return}
