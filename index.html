@@ -501,14 +501,14 @@ const S={tab:'isp',sort:{rec:{k:'cap',dir:-1},chg:{k:'abs',dir:-1}},ispSort:'cap
 let rangeClick=0,chartCtx=null,pending=null,syncedAt=null,sheetOpen=null;
 
 function rebuild(){
-  const wasFull=!F.from||!F.to||(DATES.length&&F.from===DATES[0]&&F.to===DATES[DATES.length-1]);
+  const wasLatest=!F.from||!F.to||(DATES.length&&F.from===F.to&&F.to===DATES[DATES.length-1]);
   R=[];byDate={};
   DATES=Object.keys(DAYS).sort();
   for(const d of DATES){
     byDate[d]=DAYS[d].rows.map((r,idx)=>({idx,d,g:r.g,s:r.s||'',i:r.i,v:r.v||'',t:r.t,c:+r.c||0,f:/free/i.test((r.t||'')+' '+(r.s||''))}));
     R.push(...byDate[d]);
   }
-  if(DATES.length&&(wasFull||F.from>DATES[DATES.length-1]||F.to<DATES[0])){F.from=DATES[0];F.to=DATES[DATES.length-1]}
+  if(DATES.length&&(wasLatest||F.from>DATES[DATES.length-1]||F.to<DATES[0])){F.from=F.to=DATES[DATES.length-1]}
   render();
 }
 
@@ -674,12 +674,12 @@ function renderDays(){
   let g='';
   for(let v=0;v<=sc.top+sc.step/2;v+=sc.step){const y=Y(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" style="stroke:var(--line-2)"/><text x="${m.l-6}" y="${y+4}" text-anchor="end">${axisFmt(v)}</text>`}
   const showVal=slot>=40,xstep=Math.max(1,Math.ceil(46/slot));
-  let bars='';
+  let bars='',lastLx=-1e9;
   dates.forEach((d,i)=>{
     const cx=m.l+slot*(i+.5),v=vals[i],y=Y(v),inR=d>=F.from&&d<=F.to;
     bars+=`<rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${Math.max(0,H-m.b-y)}" style="fill:${inR?'var(--accent)':'color-mix(in srgb,var(--accent) 38%,var(--surface))'}"/>`;
     if(showVal||(d===F.to&&F.from===F.to))bars+=`<text x="${cx}" y="${y-6}" text-anchor="middle" style="fill:var(--ink-2)">${v>=1e6?(v/1e6).toFixed(2)+'T':axisFmt(v)}</text>`;
-    if(i%xstep===0||i===dates.length-1)bars+=`<text x="${cx}" y="${H-9}" text-anchor="middle">${dlab(d)}</text>`;
+    if((i%xstep===0||i===dates.length-1)&&cx-lastLx>=48){bars+=`<text x="${cx}" y="${H-9}" text-anchor="${cx>W-26?'end':'middle'}">${dlab(d)}</text>`;lastLx=cx}
     bars+=`<rect data-bar="${d}" x="${m.l+slot*i}" y="${m.t}" width="${slot}" height="${H-m.t-m.b}" fill="transparent" style="cursor:pointer"><title>${dfull(d)}: ${rate(v)}</title></rect>`;
   });
   box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Capacity by day">${g}${bars}<line x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}" style="stroke:var(--line)"/></svg>`;
@@ -721,7 +721,7 @@ function renderTrend(){
   let grid='';
   for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Y(v);grid+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" style="stroke:var(--line-2)"/><text x="${m.l-6}" y="${y+4}" text-anchor="end">${axisFmt(v)}</text>`}
   const step=Math.max(1,Math.ceil(dates.length/Math.max(1,Math.floor((W-m.l-m.r)/58))));
-  dates.forEach((d,i)=>{if(i%step===0||i===dates.length-1)grid+=`<text x="${X(d)}" y="${H-9}" text-anchor="${X(d)>W-26?'end':'middle'}">${dlab(d)}</text>`});
+  let lx=-1e9;dates.forEach((d,i)=>{const x=X(d);if((i%step===0||i===dates.length-1)&&x-lx>=52){grid+=`<text x="${x}" y="${H-9}" text-anchor="${x>W-26?'end':'middle'}">${dlab(d)}</text>`;lx=x}});
   let band='';
   if(F.from&&F.to){
     const a=Math.min(X(F.from),X(F.to)),b=Math.max(X(F.from),X(F.to));
@@ -737,7 +737,7 @@ function renderTrend(){
     lines+=`<path d="${path}" fill="none" style="stroke:${s.color}" stroke-width="${S.param==='total'?2.6:2}" stroke-linejoin="round"/>`;
     pts.forEach(p=>{
       const inR=p.d>=F.from&&p.d<=F.to,bound=p.d===F.from||p.d===F.to;
-      const z=bound?10:7;
+      const z=bound?10:(dates.length>40?4:7);
       dots+=`<rect x="${X(p.d)-z/2}" y="${Y(p.v)-z/2}" width="${z}" height="${z}" style="fill:${inR?s.color:'var(--surface)'};stroke:${s.color}" stroke-width="2"/>`;
     });
   });
