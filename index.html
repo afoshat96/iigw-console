@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>IIGW Capacity Console</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0B1220">
+<meta name="description" content="Nokia IIGW QoS capacity by gate, ISP, service and day.">
+<link rel="icon" type="image/svg+xml" href="assets/icons/moc-emblem.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="IIGW Console">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -400,6 +410,13 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 .chg-sum .s{font-size:12px;color:var(--ink-3)}
 .chg-sum>div:first-child .s{color:#C9D1DE}
 
+/* update banner (service worker) */
+.updbar{position:fixed;z-index:90;left:50%;transform:translateX(-50%);bottom:calc(78px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 24px));display:flex;align-items:center;gap:10px;background:var(--hero);color:#fff;border-radius:14px;padding:10px 10px 10px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3);font-size:13.5px}
+.updbar span{flex:1;min-width:0}
+.updbar .linkbtn{color:#C9D1DE}
+@media (min-width:960px){.updbar{bottom:24px}}
+.appver{font-family:var(--mono);font-size:11px;color:var(--side-mute)}
+
 /* sign-in gate */
 .gate{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top,0px)) 16px;overflow-y:auto}
 .gate-card{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;gap:18px}
@@ -477,6 +494,7 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
     <div class="live" data-state="connecting" role="status"><i></i><span>Connecting</span></div>
     <div class="sub" id="sideFoot"></div>
     <div class="whoami" id="whoami" hidden></div>
+    <div class="appver" id="appVer"></div>
     <button class="btn small" type="button" data-auth>Sign out</button>
   </div>
 </aside>
@@ -700,6 +718,11 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 </div>
 
 <div class="toast" id="toast" hidden role="status"></div>
+<div class="updbar" id="updBar" hidden role="status">
+  <span>A new version of the console is ready.</span>
+  <button class="btn primary small" type="button" id="updNow">Update</button>
+  <button class="linkbtn" type="button" id="updLater">Later</button>
+</div>
 
 <script>
 const COL='days';
@@ -1753,6 +1776,42 @@ document.addEventListener('change',async e=>{
   catch(err){toast('Could not restore the backup. Sign in as admin first.')}
 });
 start();
+
+/* ---- PWA: install + keep every open copy on the latest version ----
+   APP_VERSION must match VERSION in sw.js; change both on every deploy. */
+const APP_VERSION='2026-11-21.1';
+$('#appVer').textContent='Version '+APP_VERSION;
+(function pwa(){
+  if(!('serviceWorker' in navigator))return;
+  const local=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if(location.protocol!=='https:'&&!local)return;
+  let waiting=null,refreshing=false,wantReload=false;
+  const bar=$('#updBar');
+  const busy=()=>!!sheetOpen||!!pending||(document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+  const apply=()=>{if(waiting){wantReload=true;waiting.postMessage('SKIP_WAITING')}};
+  const offer=w=>{waiting=w;bar.hidden=false};
+  /* reload only when an update we asked for takes over (not on the very first install) */
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!wantReload||refreshing)return;refreshing=true;location.reload()});
+  navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(reg=>{
+    const check=()=>reg.update().catch(()=>{});
+    if(reg.waiting&&navigator.serviceWorker.controller)offer(reg.waiting);
+    reg.addEventListener('updatefound',()=>{
+      const w=reg.installing;if(!w)return;
+      w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)offer(w)});
+    });
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible')check();
+      /* switching away from the app is a safe moment to update silently */
+      else if(waiting&&!busy())apply();
+    });
+    window.addEventListener('online',check);
+    setInterval(check,30*60*1000);
+  }).catch(()=>{});
+  document.addEventListener('click',e=>{
+    if(e.target.closest('#updNow')){bar.hidden=true;apply()}
+    if(e.target.closest('#updLater')){bar.hidden=true}
+  });
+})();
 </script>
 
 </body>
