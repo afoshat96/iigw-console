@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// IIGW Capacity Console — Firestore security rules
+// Paste into Firebase console → Firestore Database → Rules, then Publish.
+//
+// Who can do what:
+//   • Only signed-in accounts that have a document users/{uid} can read anything.
+//   • users/{uid}.role must be "viewer" (read only) or "admin" (read + write).
+//   • Nobody can create or change users/{uid} from the website; admins add people in the Firebase console.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function isMember() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && profile().data.role in ['viewer', 'admin'];
+    }
+    function isAdmin() {
+      return isMember() && profile().data.role == 'admin';
+    }
+
+    // Daily capacity data: one document per date
+    match /days/{day} {
+      allow read: if isMember();
+      allow write: if isAdmin();
+    }
+
+    // Each person may read only their own access record
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Everything else is closed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

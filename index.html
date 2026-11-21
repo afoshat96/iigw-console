@@ -400,6 +400,20 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 .chg-sum .s{font-size:12px;color:var(--ink-3)}
 .chg-sum>div:first-child .s{color:#C9D1DE}
 
+/* sign-in gate */
+.gate{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top,0px)) 16px;overflow-y:auto}
+.gate-card{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;gap:18px}
+.gate-logo{height:56px;width:auto;align-self:flex-start;background:#fff;border-radius:10px;padding:6px 10px;box-sizing:content-box}
+.gate h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.gate form,#gateDenied{display:flex;flex-direction:column;gap:12px}
+.gate form[hidden],#gateDenied[hidden]{display:none}
+.gate .btn.primary{min-height:48px;font-size:15px}
+.gate .linkbtn{align-self:center}
+.gate-foot{text-align:center;margin:0}
+.msg.ok{background:var(--up-soft);border-color:var(--up);color:var(--up)}
+.whoami{font-size:12px;color:var(--side-mute);overflow-wrap:anywhere}
+.whoami b{color:#fff;font-weight:600}
+
 /* ISP logos */
 .lg{flex:none;width:60px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box;font-family:var(--display);font-weight:700;font-size:12px;color:#fff;vertical-align:middle}
 .lg.img{background:#fff;border:1px solid var(--line);padding:3px 5px}
@@ -462,7 +476,8 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
   <div class="side-foot">
     <div class="live" data-state="connecting" role="status"><i></i><span>Connecting</span></div>
     <div class="sub" id="sideFoot"></div>
-    <button class="btn small" type="button" data-auth>Admin</button>
+    <div class="whoami" id="whoami" hidden></div>
+    <button class="btn small" type="button" data-auth>Sign out</button>
   </div>
 </aside>
 
@@ -472,7 +487,7 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
     <img src="assets/logos/moc.png" alt="Republic of Iraq, Ministry of Communications">
     <div class="mt"><b>IIGW Console</b><span>QoS capacity · Mb/s</span></div>
     <div class="live" data-state="connecting" role="status"><i></i><span>Connecting</span></div>
-    <button class="btn small" type="button" data-auth>Admin</button>
+    <button class="btn small" type="button" data-auth>Sign out</button>
   </div>
 </header>
 
@@ -653,15 +668,28 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
   </div>
 </section>
 
-<section class="sheet" id="authSheet" hidden role="dialog" aria-modal="true" aria-label="Admin sign in">
-  <div class="sh-head"><h2>Admin sign in</h2><button class="btn small" id="closeAuth" type="button">Close</button></div>
-  <form id="authForm" class="sh-body" onsubmit="return false">
-    <div class="field"><label for="aEmail">Email</label><input type="email" id="aEmail" autocomplete="username"></div>
-    <div class="field"><label for="aPass">Password</label><input type="password" id="aPass" autocomplete="current-password"></div>
-    <div class="msg err" id="aMsg" hidden></div>
-  </form>
-  <div class="sh-foot"><span></span><button class="btn primary" id="signIn" type="button">Sign in</button></div>
-</section>
+<!-- Sign-in gate: nothing is loaded from Firebase until an allowed account signs in -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <img class="gate-logo" src="assets/logos/moc.png" alt="Republic of Iraq, Ministry of Communications">
+    <div>
+      <h1>IIGW Capacity Console</h1>
+      <p class="sub" id="gateLead">Checking your sign-in…</p>
+    </div>
+    <form id="gateForm" hidden novalidate>
+      <div class="field"><label for="aEmail">Email</label><input type="email" id="aEmail" autocomplete="username" inputmode="email" required></div>
+      <div class="field"><label for="aPass">Password</label><input type="password" id="aPass" autocomplete="current-password" required></div>
+      <div class="msg err" id="aMsg" hidden role="alert"></div>
+      <button class="btn primary" id="signIn" type="submit">Sign in</button>
+      <button class="linkbtn" id="forgotPw" type="button">Forgot password?</button>
+    </form>
+    <div id="gateDenied" hidden>
+      <div class="msg err" role="alert" id="deniedMsg"></div>
+      <button class="btn" type="button" data-auth>Sign out</button>
+    </div>
+    <p class="sub gate-foot">Access is limited to approved accounts. Ask an admin if you need one.</p>
+  </div>
+</div>
 
 <div class="toast" id="toast" hidden role="status"></div>
 
@@ -1598,17 +1626,28 @@ let rz;const ro2=new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(
 
 /* firebase live data */
 const FIREBASE_CONFIG={apiKey:"AIzaSyC8jOeuxztPHCq6_gT60BYumlxyj4A-qck",authDomain:"iigw-capacity-console.firebaseapp.com",projectId:"iigw-capacity-console",storageBucket:"iigw-capacity-console.firebasestorage.app",messagingSenderId:"693181341723",appId:"1:693181341723:web:8f009444e6d075826198be"};
-let auth=null;
-function adminUI(u){$$('[data-auth]').forEach(b=>{b.textContent=u?'Sign out':'Admin'})}
-async function start(){
-  render();
-  dl={save:async({filename,data})=>{const u=URL.createObjectURL(data),a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}};
-  if(!window.firebase||!FIREBASE_CONFIG.apiKey){setLive('offline','Not configured');toast('Paste your Firebase settings into index.html');render();return}
-  try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();auth=firebase.auth()}
-  catch(e){setLive('offline','Offline');render();return}
-  auth.onAuthStateChanged(u=>{canWrite=!!u;adminUI(u);render()});
+/* Access model (enforced by Firestore rules, mirrored here):
+   - every reader must be signed in AND have a document users/{uid} with role "viewer" or "admin"
+   - only role "admin" can add, edit or delete data */
+const USERS='users';
+let auth=null,unsub=null,role=null;
+function showGate(mode,msg){
+  $('#gate').hidden=false;
+  $('#gateForm').hidden=mode!=='signin';
+  $('#gateDenied').hidden=mode!=='denied';
+  $('#gateLead').textContent=mode==='signin'?'Sign in to view capacity data.':mode==='denied'?'This account can’t open the console yet.':mode==='error'?msg:'Checking your sign-in…';
+  if(mode==='denied')$('#deniedMsg').textContent=msg;
+  if(mode==='signin')setTimeout(()=>{try{$('#aEmail').focus()}catch(_){}},50);
+}
+function hideGate(){$('#gate').hidden=true;$('#aMsg').hidden=true}
+function stopData(){
+  if(unsub){try{unsub()}catch(_){}unsub=null}
+  clearTimeout(loadTimer);loaded=false;DAYS={};canWrite=false;rebuild();
+}
+function startData(){
+  setLive('connecting','Connecting');
   loadTimer=setTimeout(()=>{if(!loaded){setLive('offline','Not reachable');toast('Still trying to reach the live data...')}},10000);
-  db.collection(COL).onSnapshot(snap=>{
+  unsub=db.collection(COL).onSnapshot(snap=>{
     if(!snap.metadata.fromCache)clearTimeout(loadTimer);
     loaded=true;
     const next={};
@@ -1617,20 +1656,50 @@ async function start(){
     syncedAt=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     setLive(snap.metadata.fromCache?'connecting':'live',snap.metadata.fromCache?'Connecting':'Live');
     rebuild();
-  },err=>{clearTimeout(loadTimer);setLive('offline','Offline');render()});
+  },err=>{
+    clearTimeout(loadTimer);setLive('offline','Offline');
+    if(err&&err.code==='permission-denied')showGate('denied','Signed in as '+((auth.currentUser||{}).email||'')+', but the data is not shared with this account. Ask an admin to add you.');
+    render();
+  });
 }
+async function start(){
+  render();
+  dl={save:async({filename,data})=>{const u=URL.createObjectURL(data),a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}};
+  if(!window.firebase||!FIREBASE_CONFIG.apiKey){setLive('offline','Not configured');showGate('error','The sign-in service did not load. Check your connection and reload the page.');return}
+  try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();auth=firebase.auth()}
+  catch(e){setLive('offline','Offline');showGate('error','The sign-in service did not load. Check your connection and reload the page.');return}
+  auth.onAuthStateChanged(async u=>{
+    stopData();role=null;
+    if(!u){$('#whoami').hidden=true;showGate('signin');return}
+    showGate('checking');
+    try{const s=await db.doc(USERS+'/'+u.uid).get();role=s.exists?String((s.data()||{}).role||'').toLowerCase():null}
+    catch(e){role=null}
+    if(role!=='admin'&&role!=='viewer'){showGate('denied','Signed in as '+(u.email||'this account')+', but it hasn’t been given access. Ask an admin to add you.');return}
+    canWrite=role==='admin';
+    $('#whoami').hidden=false;$('#whoami').innerHTML=`<b>${esc(u.email||'')}</b><br>${role==='admin'?'Admin · can edit':'Viewer · read only'}`;
+    hideGate();startData();render();
+  });
+}
+const AUTH_ERR={'auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'Wrong email or password.','auth/invalid-email':'Enter a valid email address.','auth/user-disabled':'This account has been turned off. Ask an admin.','auth/too-many-requests':'Too many attempts. Wait a few minutes and try again.','auth/network-request-failed':'No connection. Check your internet and try again.'};
+function gateMsg(t,ok){const m=$('#aMsg');m.textContent=t;m.className='msg '+(ok?'ok':'err');m.hidden=!t}
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='gateForm')return;
+  e.preventDefault();gateMsg('');
+  const email=$('#aEmail').value.trim(),pw=$('#aPass').value;
+  if(!email||!pw){gateMsg('Enter your email and password.');return}
+  const b=$('#signIn');b.disabled=true;b.textContent='Signing in…';
+  try{await auth.signInWithEmailAndPassword(email,pw);$('#aPass').value=''}
+  catch(err){gateMsg(AUTH_ERR[err&&err.code]||'Could not sign in. Try again.')}
+  finally{b.disabled=false;b.textContent='Sign in'}
+});
 document.addEventListener('click',async e=>{
   const t=e.target;
-  if(t.closest('[data-auth]')){
-    if(auth&&auth.currentUser){await auth.signOut();toast('Signed out');return}
-    if(!auth){toast('Firebase is not configured yet');return}
-    openSheet('authSheet');return;
-  }
-  if(t.closest('#closeAuth')){closeSheets();return}
-  if(t.closest('#signIn')){
-    const m=$('#aMsg');m.hidden=true;
-    try{await auth.signInWithEmailAndPassword($('#aEmail').value.trim(),$('#aPass').value);$('#aPass').value='';closeSheets();toast('Signed in')}
-    catch(err){m.textContent='Wrong email or password.';m.hidden=false}
+  if(t.closest('[data-auth]')){if(auth&&auth.currentUser){await auth.signOut()}return}
+  if(t.closest('#forgotPw')){
+    const email=$('#aEmail').value.trim();
+    if(!email){gateMsg('Type your email above first, then tap “Forgot password?”.');return}
+    try{await auth.sendPasswordResetEmail(email)}catch(_){}
+    gateMsg('If that email has an account, a reset link is on its way.',true);
   }
 });
 document.addEventListener('change',async e=>{
