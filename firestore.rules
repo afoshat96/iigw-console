@@ -6,7 +6,9 @@ rules_version = '2';
 // Who can do what:
 //   • Only signed-in accounts that have a document users/{uid} can read anything.
 //   • users/{uid}.role must be "viewer" (read only) or "admin" (read + write).
-//   • Nobody can create or change users/{uid} from the website; admins add people in the Firebase console.
+//   • Optional users/{uid}.mustChangePassword = true (boolean): the person must set their own password
+//     on first sign-in; until then they cannot read any data.
+//   • Nobody can create users/{uid} or change a role from the website; admins add people in the Firebase console.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -16,10 +18,12 @@ service cloud.firestore {
     function profile() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
+    // Approved, and not still on a temporary password
     function isMember() {
       return signedIn()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && profile().data.role in ['viewer', 'admin'];
+        && profile().data.role in ['viewer', 'admin']
+        && profile().data.get('mustChangePassword', false) != true;
     }
     function isAdmin() {
       return isMember() && profile().data.role == 'admin';
@@ -31,10 +35,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Each person may read only their own access record
+    // Each person may read only their own access record.
+    // The only change they may make is clearing mustChangePassword after setting their own password;
+    // role and everything else can only be changed in the Firebase console.
     match /users/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
-      allow write: if false;
+      allow update: if signedIn() && request.auth.uid == uid
+        && resource.data.get('mustChangePassword', false) == true
+        && request.resource.data.mustChangePassword == false
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword', 'passwordChangedAt']);
+      allow create, delete: if false;
     }
 
     // Everything else is closed

@@ -683,6 +683,14 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
       <button class="btn primary" id="signIn" type="submit">Sign in</button>
       <button class="linkbtn" id="forgotPw" type="button">Forgot password?</button>
     </form>
+    <form id="pwForm" hidden novalidate>
+      <div class="field"><label for="pwNew">New password</label><input type="password" id="pwNew" autocomplete="new-password" minlength="8" required></div>
+      <div class="field"><label for="pwNew2">Repeat new password</label><input type="password" id="pwNew2" autocomplete="new-password" minlength="8" required></div>
+      <p class="sub" style="margin:0">At least 8 characters, with a letter and a number. Don’t reuse the temporary password.</p>
+      <div class="msg err" id="pwMsg" hidden role="alert"></div>
+      <button class="btn primary" id="pwSave" type="submit">Save new password</button>
+      <button class="linkbtn" type="button" data-auth>Sign out</button>
+    </form>
     <div id="gateDenied" hidden>
       <div class="msg err" role="alert" id="deniedMsg"></div>
       <button class="btn" type="button" data-auth>Sign out</button>
@@ -1635,8 +1643,10 @@ let auth=null,unsub=null,role=null;
 function showGate(mode,msg){
   $('#gate').hidden=false;
   $('#gateForm').hidden=mode!=='signin';
+  $('#pwForm').hidden=mode!=='newpw';
   $('#gateDenied').hidden=mode!=='denied';
-  $('#gateLead').textContent=mode==='signin'?'Sign in to view capacity data.':mode==='denied'?'This account can’t open the console yet.':mode==='error'?msg:'Checking your sign-in…';
+  $('#gateLead').textContent=mode==='signin'?'Sign in to view capacity data.':mode==='denied'?'This account can’t open the console yet.':mode==='newpw'?'Welcome! You signed in with a temporary password. Choose your own password to continue.':mode==='error'?msg:'Checking your sign-in…';
+  if(mode==='newpw'){$('#pwMsg').hidden=true;$('#pwNew').value=$('#pwNew2').value='';setTimeout(()=>{try{$('#pwNew').focus()}catch(_){}},50)}
   if(mode==='denied')$('#deniedMsg').textContent=msg;
   if(mode==='signin')setTimeout(()=>{try{$('#aEmail').focus()}catch(_){}},50);
 }
@@ -1671,16 +1681,48 @@ async function start(){
   catch(e){setLive('offline','Offline');showGate('error','The sign-in service did not load. Check your connection and reload the page.');return}
   auth.onAuthStateChanged(async u=>{
     stopData();role=null;
-    if(!u){$('#whoami').hidden=true;showGate('signin');return}
+    if(!u){$('#whoami').hidden=true;tmpPw='';showGate('signin');return}
     showGate('checking');
-    try{const s=await db.doc(USERS+'/'+u.uid).get();role=s.exists?String((s.data()||{}).role||'').toLowerCase():null}
+    let must=false;
+    try{const s=await db.doc(USERS+'/'+u.uid).get(),x=s.exists?(s.data()||{}):null;role=x?String(x.role||'').toLowerCase():null;must=!!(x&&x.mustChangePassword===true)}
     catch(e){role=null}
     if(role!=='admin'&&role!=='viewer'){showGate('denied','Signed in as '+(u.email||'this account')+', but it hasn’t been given access. Ask an admin to add you.');return}
-    canWrite=role==='admin';
-    $('#whoami').hidden=false;$('#whoami').innerHTML=`<b>${esc(u.email||'')}</b><br>${role==='admin'?'Admin · can edit':'Viewer · read only'}`;
-    hideGate();startData();render();
+    if(must){showGate('newpw');return}
+    enterApp(u);
   });
 }
+function enterApp(u){
+  tmpPw='';
+  canWrite=role==='admin';
+  $('#whoami').hidden=false;$('#whoami').innerHTML=`<b>${esc(u.email||'')}</b><br>${role==='admin'?'Admin · can edit':'Viewer · read only'}`;
+  hideGate();startData();render();
+}
+/* first sign-in with a temporary password: users/{uid}.mustChangePassword === true */
+let tmpPw='';
+function pwMsg(t){const m=$('#pwMsg');m.textContent=t;m.hidden=!t}
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='pwForm')return;
+  e.preventDefault();pwMsg('');
+  const a=$('#pwNew').value,b=$('#pwNew2').value,u=auth&&auth.currentUser;
+  if(!u){showGate('signin');return}
+  if(a.length<8)return pwMsg('Use at least 8 characters.');
+  if(!/[A-Za-z]/.test(a)||!/\d/.test(a))return pwMsg('Use at least one letter and one number.');
+  if(a!==b)return pwMsg('The two passwords don’t match.');
+  if(tmpPw&&a===tmpPw)return pwMsg('Choose a password different from the temporary one.');
+  const btn=$('#pwSave');btn.disabled=true;btn.textContent='Saving…';
+  try{
+    await u.updatePassword(a);
+    await db.doc(USERS+'/'+u.uid).update({mustChangePassword:false,passwordChangedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    $('#pwNew').value=$('#pwNew2').value='';
+    toast('Password saved');enterApp(u);
+  }catch(err){
+    const c=err&&err.code;
+    if(c==='auth/requires-recent-login'){pwMsg('For security, sign in again with the temporary password, then set your new one.');setTimeout(()=>auth.signOut(),2500)}
+    else if(c==='auth/weak-password')pwMsg('That password is too weak. Try a longer one.');
+    else if(c==='permission-denied')pwMsg('Your password was changed, but your access record could not be updated. Ask an admin.');
+    else pwMsg(AUTH_ERR[c]||'Could not save the password. Try again.');
+  }finally{btn.disabled=false;btn.textContent='Save new password'}
+});
 const AUTH_ERR={'auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'Wrong email or password.','auth/invalid-email':'Enter a valid email address.','auth/user-disabled':'This account has been turned off. Ask an admin.','auth/too-many-requests':'Too many attempts. Wait a few minutes and try again.','auth/network-request-failed':'No connection. Check your internet and try again.'};
 function gateMsg(t,ok){const m=$('#aMsg');m.textContent=t;m.className='msg '+(ok?'ok':'err');m.hidden=!t}
 document.addEventListener('submit',async e=>{
@@ -1689,6 +1731,7 @@ document.addEventListener('submit',async e=>{
   const email=$('#aEmail').value.trim(),pw=$('#aPass').value;
   if(!email||!pw){gateMsg('Enter your email and password.');return}
   const b=$('#signIn');b.disabled=true;b.textContent='Signing in…';
+  tmpPw=pw;
   try{await auth.signInWithEmailAndPassword(email,pw);$('#aPass').value=''}
   catch(err){gateMsg(AUTH_ERR[err&&err.code]||'Could not sign in. Try again.')}
   finally{b.disabled=false;b.textContent='Sign in'}
