@@ -777,7 +777,7 @@ function logoTile(name){
 function render(){
   $('#rangeVal').textContent=rangeText();
   const fc=filterCount();$('#fcount').hidden=!fc;$('#fcount').textContent=fc;
-  $('#exportBtn').hidden=!(dl&&DATES.length);
+  $('#exportBtn').hidden=!(dl&&DATES.length&&canWrite);
   $('#openData').hidden=!canWrite;
   applyView();
   if(!DATES.length){renderEmpty();return}
@@ -1094,7 +1094,7 @@ function actBtns(r){
   return `<button class="row-act" type="button" data-edit="${r.d}|${r.idx}">Edit</button> <button class="row-act" type="button" data-del="${r.d}|${r.idx}">Delete</button>`;
 }
 const billTag=r=>r.f?'<span class="bill free">Free</span>':'<span class="bill paid">Paid</span>';
-function exportBtnHTML(){return dl?'<button class="btn small" id="exportBtn2" type="button">Export Excel</button>':''}
+function exportBtnHTML(){return dl&&canWrite?'<button class="btn small" id="exportBtn2" type="button">Export Excel</button>':''}
 const ispFor=n=>S.ispF[n]||(S.ispF[n]={d:new Set(),g:new Set(),t:new Set()});
 function ispDetail(o,sel){
   const f=ispFor(o.i);
@@ -1402,6 +1402,7 @@ async function buildTemplateWorkbook(ExcelJS,rows,ZONES){
 }
 
 async function exportXlsx(){
+  if(!canWrite){toast('Only admins can export to Excel.');return}
   const rows=getRows();
   if(!rows.length){toast('No records match the current filters');return}
   if(!window.ExcelJS){toast('The Excel library did not load. Check your connection.');return}
