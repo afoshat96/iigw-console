@@ -1621,6 +1621,22 @@ function parseDateText(s){
   m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
   return null;
 }
+/* a merged cell (one gate over several rows) only holds its value in the top-left cell: copy it to the rest */
+function fillMerges(ws){
+  for(const m of ws['!merges']||[]){
+    const top=ws[XLSX.utils.encode_cell(m.s)];if(!top)continue;
+    for(let r=m.s.r;r<=m.e.r;r++)for(let c=m.s.c;c<=m.e.c;c++){
+      if(r===m.s.r&&c===m.s.c)continue;ws[XLSX.utils.encode_cell({r,c})]={...top};
+    }
+  }
+}
+/* "till end of May_2025" -> last day of that month */
+function monthEnd(s){
+  const m=String(s).replace(/_/g,' ').match(/end\s+of\s+([A-Za-z]{3,9})\.?[\s-]*(\d{4})/i);if(!m)return null;
+  const i=MON.findIndex(x=>m[1].toLowerCase().startsWith(x.toLowerCase()));if(i<0)return null;
+  const last=new Date(Date.UTC(+m[2],i+1,0)).getUTCDate();
+  return m[2]+'-'+String(i+1).padStart(2,'0')+'-'+String(last).padStart(2,'0');
+}
 function cellDate(v){
   if(v instanceof Date&&!isNaN(v))return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0')+'-'+String(v.getDate()).padStart(2,'0');
   if(typeof v==='number'&&v>30000&&v<80000){const d=new Date(Math.round((v-25569)*864e5));return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
@@ -1669,11 +1685,12 @@ async function parseFile(file){
   const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
   const days={},skipped=[];
   for(const name of wb.SheetNames){
-    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:null});
+    const ws=wb.Sheets[name];fillMerges(ws);
+    const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
     const flat=parseFlat(aoa);
     if(flat&&Object.keys(flat).length){for(const d in flat)(days[d]=days[d]||[]).push(...flat[d]);continue}
     let d=parseDateText(name);
-    if(!d){const t=aoa.slice(0,3).flat().find(c=>typeof c==='string'&&/till end of/i.test(c));if(t)d=parseDateText(t.replace(/_/g,' '))}
+    if(!d){const t=aoa.slice(0,3).flat().find(c=>typeof c==='string'&&/till end of/i.test(c));if(t)d=parseDateText(t.replace(/_/g,' '))||monthEnd(t)}
     if(!d){skipped.push(name);continue}
     const rows=parseDaily(aoa);
     if(rows.length)days[d]=(days[d]||[]).concat(rows);else skipped.push(name);
@@ -2237,7 +2254,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-22.7';
+const APP_VERSION='2026-11-22.8';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;
