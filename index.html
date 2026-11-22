@@ -306,7 +306,7 @@ h1,h2,h3,.disp{font-family:var(--display)}
 .mtop .mt span{display:block;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
 .mtop .btn{min-height:36px;padding:6px 10px;font-size:12px}
 @media (max-width:420px){.mtop .live span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.mtop .live{padding:8px}}
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:4px max(8px,env(safe-area-inset-left,0px)) calc(4px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:4px max(8px,env(safe-area-inset-left,0px)) calc(4px + env(safe-area-inset-bottom,0px))}
 .tb{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;font-size:11px;font-weight:600;color:var(--ink-3);position:relative}
 .tb[aria-current="page"]{color:var(--accent)}
 .tb .badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--accent);color:#fff;border-radius:999px;font-size:10px;font-weight:700;padding:0 6px;line-height:16px}
@@ -475,7 +475,6 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 
 /* Zain & Asia */
 :root{--zain:#008D8D;--asia:#E82228;--zain-l:#2DD4BF;--asia-l:#FF6B6E}
-.za-mode .controls,.za-mode #quick,.za-mode #activeStrip,.za-mode #statbox{display:none!important}
 .za{display:flex;flex-direction:column;gap:16px}
 .za-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .za-step{display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;min-width:0}
@@ -562,6 +561,32 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
   .op-row{grid-template-columns:minmax(0,1fr) auto}.op-row .track{grid-column:1/-1;grid-row:2;margin-bottom:8px}
 }
 @media (min-width:1100px){.za-ops{grid-template-columns:repeat(2,minmax(0,1fr))}.za-grid{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}}
+
+/* Backbone (PRTG live map) */
+.za-mode .controls,.za-mode #quick,.za-mode #activeStrip,.za-mode #statbox,.bb-mode .controls,.bb-mode #quick,.bb-mode #activeStrip,.bb-mode #statbox{display:none!important}
+.bb{display:flex;flex-direction:column;gap:14px}
+.bb-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.bb-title{display:flex;align-items:center;gap:12px;min-width:0}
+.bb-title .ic{width:40px;height:40px;border-radius:12px;background:var(--hero);color:#fff;display:grid;place-items:center;flex:none}
+.bb-title b{display:block;font-family:var(--display);font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bb-title span{font-size:12.5px;color:var(--ink-3)}
+.bb-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bb-state{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px 5px 10px;font-size:12px;font-weight:600;color:var(--ink-2)}
+.bb-state i{width:8px;height:8px;border-radius:50%;background:var(--ink-3)}
+.bb-state[data-s="ok"]{color:var(--up)}.bb-state[data-s="ok"] i{background:var(--up);box-shadow:0 0 0 3px var(--up-soft)}
+.bb-state[data-s="bad"]{color:var(--down)}.bb-state[data-s="bad"] i{background:var(--down)}
+.bb-state[data-s="wait"] i{background:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+.bb-frame{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:auto;-webkit-overflow-scrolling:touch}
+.bb-frame .sizer{position:relative;overflow:hidden}
+.bb-frame iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}
+.bb-frame.full{position:fixed;inset:0;z-index:60;border-radius:0;border:0}
+.bb-exit{position:fixed;top:12px;right:12px;z-index:61}
+.bb-note{font-size:12.5px;color:var(--ink-3)}
+a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)}
+.bb-fail{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px;max-width:760px}
+.bb-fail h2{font-size:17px}
+.bb-fail ol{margin:0;padding-left:20px;line-height:1.7;color:var(--ink-2)}
+.bb-fail .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 </style>
 </head>
 <body>
@@ -579,6 +604,7 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
     <button class="nav" type="button" data-view="rec"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Records<span class="cnt" id="navRec"></span></button>
     <button class="nav" type="button" data-view="chg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Day changes<span class="badge" id="navChg" hidden></span></button>
     <button class="nav" type="button" data-view="za"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5a7 7 0 0 1 14 0"/><path d="M8.5 12.5a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="16.5" r="1.5"/></svg>Zain &amp; Asia<span class="cnt" id="navZa"></span></button>
+    <button class="nav" type="button" data-view="bb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="5" rx="1"/><rect x="2.5" y="16.5" width="6" height="5" rx="1"/><rect x="15.5" y="16.5" width="6" height="5" rx="1"/><path d="M12 7.5v4M5.5 16.5v-2.5h13v2.5"/></svg>Backbone</button>
     <button class="nav" type="button" id="navImport" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Import data</button>
   </nav>
   <div class="side-foot">
@@ -679,6 +705,7 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
   </section>
 
   <section class="za" id="zaBox" data-v="za" aria-label="Zain and Asia"></section>
+  <section class="bb" id="bbBox" data-v="bb" aria-label="Backbone map"></section>
 
   <section class="panel" data-v="isp rec chg">
     <div id="tabBody"></div>
@@ -695,6 +722,7 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
   <button class="tb" type="button" data-view="chg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Changes<span class="badge" id="tbChg" hidden></span></button>
   <button class="tb" type="button" data-view="rec"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Records</button>
   <button class="tb" type="button" data-view="za"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5a7 7 0 0 1 14 0"/><path d="M8.5 12.5a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="16.5" r="1.5"/></svg>Zain&amp;Asia</button>
+  <button class="tb" type="button" data-view="bb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="5" rx="1"/><rect x="2.5" y="16.5" width="6" height="5" rx="1"/><rect x="15.5" y="16.5" width="6" height="5" rx="1"/><path d="M12 7.5v4M5.5 16.5v-2.5h13v2.5"/></svg>Backbone</button>
 </nav>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -756,6 +784,20 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 </section>
 
 <!-- Data -->
+<section class="sheet" id="bbSheet" hidden role="dialog" aria-modal="true" aria-label="Backbone map link">
+  <div class="sh-head"><h2>Backbone map link</h2><button class="btn small" id="closeBb" type="button">Close</button></div>
+  <form class="sh-body" id="bbForm" onsubmit="return false">
+    <p class="sub" style="margin:0">In PRTG open the map, set <b>Public Access</b> to “Allow public access but disable all links”, then copy the URL from <b>Get HTML → Option 3</b> (the address inside the iframe code). Only signed-in console users can see this link.</p>
+    <div class="field"><label for="bbName">Map name</label><input type="text" id="bbName" placeholder="IIGWS-DSTs-Connections PH2 Topology"></div>
+    <div class="field"><label for="bbUrl">Public map URL (https)</label><input type="url" id="bbUrl" placeholder="https://prtg.example.iq/public/mapshow.htm?id=…&amp;mapid=…"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label for="bbW">Map width (px)</label><input type="number" id="bbW" min="200" step="1" placeholder="3000"></div>
+      <div class="field"><label for="bbH">Map height (px)</label><input type="number" id="bbH" min="200" step="1" placeholder="1500"></div>
+    </div>
+  </form>
+  <div class="sh-foot"><span></span><button class="btn primary" id="bbSave" type="button">Save link</button></div>
+</section>
+
 <section class="sheet" id="zaSheet" hidden role="dialog" aria-modal="true" aria-label="Add Zain and Asia data">
   <div class="sh-head"><h2>Add Zain &amp; Asia data</h2><button class="btn small" id="closeZa" type="button">Close</button></div>
   <div class="sh-body">
@@ -895,14 +937,14 @@ function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTim
 function setLive(state,label){$$('.live').forEach(el=>{el.dataset.state=state;$('span',el).textContent=label})}
 
 /* views + logos */
-const VIEWS={overview:'Overview',isp:'ISPs',rec:'Records',chg:'Day changes',za:'Zain & Asia'};
-function setView(v){if(!VIEWS[v])return;S.view=v;if(v!=='overview'&&v!=='za')S.tab=v;render();try{window.scrollTo({top:0})}catch(_){}}
+const VIEWS={overview:'Overview',isp:'ISPs',rec:'Records',chg:'Day changes',za:'Zain & Asia',bb:'Backbone'};
+function setView(v){if(!VIEWS[v])return;S.view=v;if(v!=='overview'&&v!=='za'&&v!=='bb')S.tab=v;render();try{window.scrollTo({top:0})}catch(_){}}
 function applyView(){
   $$('[data-v]').forEach(el=>{el.hidden=!el.dataset.v.split(' ').includes(S.view)});
   $$('[data-view]').forEach(b=>{if(b.dataset.view===S.view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
-  document.body.classList.toggle('za-mode',S.view==='za');
-  $('#pageEyebrow').textContent=S.view==='za'?'Zain & Asia · Customer QoS · Mb/s':VIEWS[S.view]+' · all figures in Mb/s';
-  $('#pageTitle').textContent=S.view==='za'?(zaDay()?dfull(zaDay()):'Zain & Asia'):DATES.length?rangeText():'IIGW Capacity Console';
+  document.body.classList.toggle('za-mode',S.view==='za');document.body.classList.toggle('bb-mode',S.view==='bb');
+  $('#pageEyebrow').textContent=S.view==='bb'?'Backbone · live PRTG map':S.view==='za'?'Zain & Asia · Customer QoS · Mb/s':VIEWS[S.view]+' · all figures in Mb/s';
+  $('#pageTitle').textContent=S.view==='bb'?'Backbone':S.view==='za'?(zaDay()?dfull(zaDay()):'Zain & Asia'):DATES.length?rangeText():'IIGW Capacity Console';
   $('#navImport').hidden=!canWrite;
 }
 const LOGOS={'SUPER CELL':'supercell','SUPERCELL':'supercell','HORIZON':'horizon','MASARAT':'masarat','JAZEERA':'jazeera','AL JAZEERA':'jazeera'};
@@ -924,6 +966,7 @@ function render(){
   applyView();
   renderZaNav();
   if(S.view==='za'){renderZA();renderFooter();return}
+  if(S.view==='bb'){renderBB();renderFooter();return}
   if(!DATES.length){renderEmpty();return}
   renderDateInputs();renderChips();renderQuick();renderIspList();renderActive();renderStat();renderNav();
   if(S.view==='overview'){renderKPIs();renderTrend();renderChgMini();renderDays();renderDonut();renderBars('gate','g','#gateBars');renderBars('type','t','#typeBars');renderHeat()}
@@ -964,7 +1007,7 @@ function renderEmpty(){
   const msg=!db?'Live data is not available in this view. Open the page from its Claude link while signed in.':loaded?(canWrite?'No data yet. Tap Add data to import your Excel files.':'No data has been added yet.'):'Connecting to live data...';
   $('#kpis').innerHTML=`<div class="empty-msg" style="grid-column:1/-1">${esc(msg)}</div>`;
   ['#gateBars','#typeBars','#heat','#tabBody','#trendBox','#dayBox','#donutBox','#statbox','#chgMini'].forEach(s=>{$(s).innerHTML=''});
-  if(S.view!=='overview'&&S.view!=='za'){S.view='overview';applyView()}
+  if(S.view!=='overview'&&S.view!=='za'&&S.view!=='bb'){S.view='overview';applyView()}
   $('#activeStrip').hidden=true;$('#quick').innerHTML='';renderDayList();renderFooter();
 }
 function renderFooter(){
@@ -1737,6 +1780,13 @@ document.addEventListener('click',e=>{
   if(t.closest('#saveRecord')){saveRecord();return}
   if(t.closest('#closeRec')){closeSheets();return}
   if(t.closest('#openData')){openSheet('dataSheet');return}
+  if(t.closest('#bbEdit')){bbOpenSheet();return}
+  if(t.closest('#closeBb')){closeSheets();return}
+  if(t.closest('#bbSave')){bbSave();return}
+  if(t.closest('#bbRetry')){BB.reach=null;bbProbe(true);return}
+  if(t.closest('#bbFull')){bbFull(true);return}
+  if(t.closest('#bbExit')){bbFull(false);return}
+  if(el=t.closest('[data-bb-zoom]')){BB.zoom=el.dataset.bbZoom;bbLayout();renderBB();return}
   if(t.closest('#zaAdd')){openSheet('zaSheet');renderZaDayList();return}
   if(t.closest('#closeZa')){closeSheets();return}
   if(t.closest('#zaExport')){zaExport();return}
@@ -1773,7 +1823,7 @@ document.addEventListener('input',e=>{
   if(id==='recQ'){S.recQ=e.target.value;S.recLimit=60;renderTabs()}
   if(id==='chgQ'){S.chgQ=e.target.value;renderTabs()}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen)closeSheets()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen)closeSheets();else if(e.key==='Escape'&&BB.full)bbFull(false)});
 const drop=$('#drop');
 ['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over')}));
 ['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over')}));
@@ -1970,13 +2020,90 @@ async function zaExport(){
   }catch(e){toast('Could not export the file here')}
 }
 
+
+/* ===== Backbone: the team's PRTG map, shown live through its public (no-login) URL. The URL is kept in Firestore config/backbone
+   (members can read, admins can change), never in this public source code. ===== */
+const BB_DOC='config/backbone';
+const BB={url:'',name:'',w:3000,h:1500,loaded:false,err:null,reach:null,zoom:'fit',full:false,frameUrl:null,checkedAt:null};
+function bbReset(){Object.assign(BB,{url:'',name:'',loaded:false,err:null,reach:null,frameUrl:null});const f=$('#bbFrame');if(f)f.remove()}
+function bbScale(){
+  const fr=$('#bbFrame');if(!fr)return 1;
+  if(BB.zoom==='fit'){const w=fr.clientWidth||fr.getBoundingClientRect().width;return Math.max(.1,Math.min(1,w/BB.w))}
+  return +BB.zoom||1;
+}
+function bbLayout(){
+  const fr=$('#bbFrame');if(!fr)return;
+  const sc=bbScale(),sz=fr.querySelector('.sizer'),ifr=fr.querySelector('iframe');
+  ifr.width=BB.w;ifr.height=BB.h;ifr.style.width=BB.w+'px';ifr.style.height=BB.h+'px';ifr.style.transform='scale('+sc+')';
+  sz.style.width=Math.round(BB.w*sc)+'px';sz.style.height=Math.round(BB.h*sc)+'px';
+  if(!BB.full){const maxH=Math.round(window.innerHeight*.78);fr.style.height=Math.min(Math.round(BB.h*sc)+2,maxH)+'px'}else fr.style.height='';
+  const zl=$('#bbZoomLbl');if(zl)zl.textContent=Math.round(sc*100)+'%';
+}
+/* A no-cors request fails outright when the browser can't reach PRTG or doesn't trust its certificate; that is our signal to show help instead of a blank frame. */
+async function bbProbe(force){
+  if(!BB.url||(BB.reach!=null&&!force))return;
+  BB.reach='wait';renderBB();
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),9000);
+  try{await fetch(BB.url,{mode:'no-cors',cache:'no-store',signal:ctl.signal,credentials:'omit'});BB.reach='ok'}
+  catch(e){BB.reach='bad'}
+  clearTimeout(tm);BB.checkedAt=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  if(S.view==='bb')renderBB();
+}
+function bbFull(on){BB.full=on;const fr=$('#bbFrame');if(!fr)return;fr.classList.toggle('full',on);$('#bbExit').hidden=!on;document.body.style.overflow=on?'hidden':'';bbLayout()}
+function renderBB(){
+  const box=$('#bbBox');if(!box)return;
+  const host=(()=>{try{return new URL(BB.url).host}catch(_){return ''}})();
+  const edit=canWrite?`<button class="btn" type="button" id="bbEdit">${BB.url?'Map link':'+ Add map link'}</button>`:'';
+  let head=box.querySelector('.bb-bar');
+  const state=!BB.url?'':BB.reach==='ok'?'<span class="bb-state" data-s="ok"><i></i>Live from PRTG · refreshes every 30 s</span>':BB.reach==='bad'?'<span class="bb-state" data-s="bad"><i></i>Can’t load PRTG here</span>':'<span class="bb-state" data-s="wait"><i></i>Connecting to PRTG…</span>';
+  const zooms=[['fit','Fit'],['0.5','50%'],['0.75','75%'],['1','100%']];
+  const tools=BB.url&&BB.reach==='ok'?`<div class="seg" role="group" aria-label="Zoom">${zooms.map(([k,l])=>`<button class="seg-btn" type="button" data-bb-zoom="${k}" aria-pressed="${BB.zoom===k}">${l}</button>`).join('')}</div><button class="btn" type="button" id="bbFull">Full screen</button><a class="btn" href="${esc(BB.url)}" target="_blank" rel="noopener">Open in PRTG ↗</a>`:'';
+  const barHTML=`<div class="bb-title"><span class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="5" rx="1"/><rect x="2.5" y="16.5" width="6" height="5" rx="1"/><rect x="15.5" y="16.5" width="6" height="5" rx="1"/><path d="M12 7.5v4M5.5 16.5v-2.5h13v2.5"/></svg></span><div style="min-width:0"><b>${esc(BB.name||'PRTG map')}</b><span>${host?'PRTG · '+esc(host):'PRTG live topology'}</span></div></div><div class="bb-tools">${state}${tools}${edit}</div>`;
+  if(!head){box.innerHTML=`<div class="bb-bar"></div><div class="bb-body"></div><button class="btn primary bb-exit" id="bbExit" type="button" hidden>Exit full screen</button>`;head=box.querySelector('.bb-bar')}
+  head.innerHTML=barHTML;
+  const body=box.querySelector('.bb-body');
+  if(!BB.url){
+    const msg=!db?'Live data is not available here.':!BB.loaded?'Connecting…':BB.err?'The Backbone map is not shared with this account yet ('+BB.err+').':canWrite?'No PRTG map linked yet. Tap “+ Add map link” and paste the map’s public URL from PRTG.':'The Backbone map hasn’t been linked yet. Ask an admin to add it.';
+    body.innerHTML=`<div class="panel za-empty">${esc(msg)}</div>`;BB.frameUrl=null;return;
+  }
+  if(BB.reach==null){bbProbe();return}
+  if(BB.reach==='wait'){if(!$('#bbFrame'))body.innerHTML='<div class="panel za-empty">Connecting to PRTG…</div>';return}
+  if(BB.reach==='bad'){
+    BB.frameUrl=null;
+    body.innerHTML=`<div class="bb-fail" role="alert"><h2>The PRTG map can’t load in this browser</h2>
+      <p class="sub" style="margin:0">Either this device can’t reach the PRTG server, or the browser doesn’t trust PRTG’s security certificate${host?' ('+esc(host)+')':''}.</p>
+      <ol><li>Tap <b>Open PRTG map</b>. If the browser warns about the connection, that page is PRTG; continue only if you trust it.</li><li>Come back here and tap <b>Try again</b>.</li></ol>
+      <div class="row"><a class="btn primary" href="${esc(BB.url)}" target="_blank" rel="noopener">Open PRTG map ↗</a><button class="btn" type="button" id="bbRetry">Try again</button></div>
+      <p class="bb-note" style="margin:0">For everyone to see it without warnings, IT can install a trusted certificate on PRTG (for example a domain name with Let’s Encrypt).${BB.checkedAt?' Last check '+BB.checkedAt+'.':''}</p></div>`;
+    return;
+  }
+  if(BB.frameUrl!==BB.url||!$('#bbFrame')){
+    body.innerHTML=`<div class="bb-frame" id="bbFrame"><div class="sizer"><iframe title="${esc(BB.name||'PRTG map')}" src="${esc(BB.url)}" referrerpolicy="no-referrer" loading="eager"></iframe></div></div><p class="bb-note" style="margin:6px 2px 0">Live map from PRTG; statuses update on their own. Click a device name (or its numbers) to open it in PRTG. PRTG asks for your PRTG login the first time, then remembers it in this browser. Use your browser’s Back button to return here.</p>`;
+    BB.frameUrl=BB.url;
+  }
+  bbLayout();
+}
+function bbOpenSheet(){
+  if(!canWrite)return;openSheet('bbSheet');
+  $('#bbName').value=BB.name||'';$('#bbUrl').value=BB.url||'';$('#bbW').value=BB.w||3000;$('#bbH').value=BB.h||1500;
+}
+async function bbSave(){
+  if(!canWrite)return;
+  const url=clean($('#bbUrl').value),name=clean($('#bbName').value),w=Math.round(+$('#bbW').value||3000),h=Math.round(+$('#bbH').value||1500);
+  let u;try{u=new URL(url)}catch(_){toast('Paste the full map URL, starting with https://');return}
+  if(u.protocol!=='https:'){toast('The map URL must start with https:// (the console is https).');return}
+  if(!/mapshow\.htm/i.test(u.pathname)){toast('That doesn’t look like a PRTG map URL (…/public/mapshow.htm?id=…&mapid=…).');return}
+  if(await guard(()=>db.doc(BB_DOC).set({url:u.href,name,w,h,updatedAt:Date.now()}),'Backbone map saved'))closeSheets();
+}
+let bbRz;window.addEventListener('resize',()=>{clearTimeout(bbRz);bbRz=setTimeout(()=>{if(S.view==='bb')bbLayout()},80)});
+
 /* firebase live data */
 const FIREBASE_CONFIG={apiKey:"AIzaSyC8jOeuxztPHCq6_gT60BYumlxyj4A-qck",authDomain:"iigw-capacity-console.firebaseapp.com",projectId:"iigw-capacity-console",storageBucket:"iigw-capacity-console.firebasestorage.app",messagingSenderId:"693181341723",appId:"1:693181341723:web:8f009444e6d075826198be"};
 /* Access model (enforced by Firestore rules, mirrored here):
    - every reader must be signed in AND have a document users/{uid} with role "viewer" or "admin"
    - only role "admin" can add, edit or delete data */
 const USERS='users';
-let auth=null,unsub=null,unsubZa=null,role=null;
+let auth=null,unsub=null,unsubZa=null,unsubBb=null,role=null;
 function showGate(mode,msg){
   $('#gate').hidden=false;
   $('#gateForm').hidden=mode!=='signin';
@@ -1991,12 +2118,20 @@ function hideGate(){$('#gate').hidden=true;$('#aMsg').hidden=true}
 function stopData(){
   if(unsub){try{unsub()}catch(_){}unsub=null}
   if(unsubZa){try{unsubZa()}catch(_){}unsubZa=null}
+  if(unsubBb){try{unsubBb()}catch(_){}unsubBb=null}
+  bbReset();
   ZA.days={};ZA.loaded=false;ZA.err=null;zaRebuild();
   clearTimeout(loadTimer);loaded=false;DAYS={};canWrite=false;rebuild();
 }
 function startData(){
   setLive('connecting','Connecting');
   loadTimer=setTimeout(()=>{if(!loaded){setLive('offline','Not reachable');toast('Still trying to reach the live data...')}},10000);
+  unsubBb=db.doc(BB_DOC).onSnapshot(d=>{
+    const x=d.exists?(d.data()||{}):{};BB.loaded=true;BB.err=null;
+    const url=typeof x.url==='string'?x.url:'';if(url!==BB.url){BB.url=url;BB.reach=null;BB.frameUrl=null}
+    BB.name=x.name||'';BB.w=+x.w||3000;BB.h=+x.h||1500;
+    if(S.view==='bb')render();
+  },err=>{BB.loaded=true;BB.err=(err&&err.code)||'error';if(S.view==='bb')render()});
   unsubZa=db.collection(ZA_COL).onSnapshot(snap=>{
     const next={};
     snap.docs.forEach(d=>{const x=d.data();if(x&&Array.isArray(x.rows))next[d.id]={rows:x.rows,updatedAt:x.updatedAt||0}});
@@ -2100,7 +2235,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-22.3';
+const APP_VERSION='2026-11-22.4';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;

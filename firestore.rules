@@ -41,6 +41,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Console settings, e.g. config/backbone = the PRTG map link (it contains PRTG's secret key, so members only)
+    match /config/{doc} {
+      allow read: if isMember();
+      allow write: if isAdmin();
+    }
+
     // Each person may read only their own access record.
     // The only change they may make is clearing mustChangePassword after setting their own password;
     // role and everything else can only be changed in the Firebase console.
