@@ -525,7 +525,9 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 .za-legend{display:flex;gap:14px;font-size:12.5px;color:var(--ink-2)}
 .za-legend span{display:flex;align-items:center;gap:6px}
 .za-legend i{width:14px;height:3px;border-radius:2px}
-.za-chart svg{width:100%;height:220px;display:block}
+.za-chart svg{width:100%;height:220px;display:block;cursor:pointer}
+.za-months{position:relative;height:20px;margin-top:6px;font-size:11.5px;color:var(--ink-3)}
+.za-months span{position:absolute;top:0;transform:translateX(-2px);white-space:nowrap}
 .za-days{display:grid;gap:2px;margin-top:8px}
 .za-days button{border:0;background:transparent;color:var(--ink-3);border-radius:6px;font-family:var(--mono);font-size:11px;height:28px;padding:0}
 .za-days button:hover{background:var(--hover)}
@@ -1743,6 +1745,8 @@ document.addEventListener('click',e=>{
   if(el=t.closest('[data-za-step]')){zaStep(+el.dataset.zaStep);return}
   if(el=t.closest('[data-za-day]')){ZA.sel=el.dataset.zaDay;render();return}
   if(el=t.closest('[data-za-mob]')){ZA.mob=el.dataset.zaMob;renderZA();return}
+  if(el=t.closest('[data-za-period]')){ZA.period=el.dataset.zaPeriod;renderZA();return}
+  if(el=t.closest('[data-za-chart] svg')){const w=el.parentNode.dataset.zaChart.split(','),r=el.getBoundingClientRect(),k=Math.round((e.clientX-r.left)/r.width*(w.length-1));if(w[k]){ZA.sel=w[k];render()}return}
   if(t.closest('#closeData')){closeSheets();return}
   if(t.closest('#exportBtn')||t.closest('#exportBtn2')){exportXlsx();return}
   if(t.closest('#moreRec')){S.recLimit+=60;renderTabs();return}
@@ -1783,7 +1787,7 @@ let rz;const ro2=new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(
 
 /* ===== Zain & Asia: per-day Customer QoS on the Zain and Asia upstreams (collection "operators") ===== */
 const ZA_COL='operators';
-const ZA={days:{},dates:[],sel:null,mob:'Total',loaded:false,err:null};
+const ZA={days:{},dates:[],sel:null,mob:'Total',loaded:false,err:null,period:'30'};
 const OPS=[{k:'z',name:'Zain',full:'Zain Iraq',cls:'zain',c:'var(--zain)',cl:'var(--zain-l)',logo:'assets/logos/zain-iraq.png'},
            {k:'a',name:'Asia',full:'Asiacell',cls:'asia',c:'var(--asia)',cl:'var(--asia-l)',logo:'assets/logos/asiacell.svg'}];
 let zaPending=null;
@@ -1827,22 +1831,26 @@ function renderZA(){
       <div class="op-rows">${rs.map(r=>`<div class="op-row"><span class="nm">${logoTile(r.n)}<span>${esc(r.n)}</span></span><span class="track"><span style="width:${Math.max(1.5,r[o.k]/mx*100).toFixed(1)}%"></span></span><span class="val">${fmtN(r[o.k])}<small>${pct(r[o.k],t)}</small></span></div>`).join('')||'<div class="sub" style="padding:10px 0">No companies on '+o.name+' this day.</div>'}</div>
       <div class="op-foot"><span>Total ${o.name}</span><span>${fmtN(t)} Mb/s</span></div></section>`}).join('')+'</div>';
   // chart + changes
-  const sZ=ZA.dates.map(x=>zaSum(x,'z')),sA=ZA.dates.map(x=>zaSum(x,'a'));
+  const win=(()=>{const N=ZA.period==='all'?ZA.dates.length:+ZA.period;let e=ZA.dates.length;if(i>=0&&i<e-N)e=Math.min(ZA.dates.length,i+Math.ceil(N/2));return ZA.dates.slice(Math.max(0,e-N),e)})();
+  const sZ=win.map(x=>zaSum(x,'z')),sA=win.map(x=>zaSum(x,'a'));
   let lo=Math.min(...sZ,...sA),hi=Math.max(...sZ,...sA);const pad=Math.max((hi-lo)*.15,hi*.02,1);lo=Math.max(0,lo-pad);hi=hi+pad;
-  const n=ZA.dates.length,X=k=>n>1?(k/(n-1)*1000).toFixed(1):'500',Y=v=>((1-(v-lo)/(hi-lo))*220).toFixed(1);
+  const n=win.length,wi=win.indexOf(d),X=k=>n>1?(k/(n-1)*1000).toFixed(1):'500',Y=v=>((1-(v-lo)/(hi-lo))*220).toFixed(1);
   const line=arr=>arr.map((v,k)=>(k?'L':'M')+X(k)+' '+Y(v)).join('');
-  const pk=(arr)=>{const m=Math.max(...arr);return {m,ds:ZA.dates.filter((_,k)=>arr[k]===m)}};
+  const months=[];win.forEach((x,k)=>{const m=x.slice(0,7);if(!months.length||months[months.length-1].m!==m)months.push({m,k})});
+  for(let j=months.length-2;j>=0;j--)if(n>1&&(months[j+1].k-months[j].k)/(n-1)<.05)months.splice(j,1);
+  const pk=(arr)=>{const m=Math.max(...arr);return {m,ds:win.filter((_,k)=>arr[k]===m)}};
   const pz=pk(sZ),pa=pk(sA),pkd=ds=>ds.length>2?dlab(ds[0])+'–'+dlab(ds[ds.length-1]):ds.map(dlab).join(', ');
   const chg=[];if(p){const prev=new Map(zaRows(p).map(r=>[r.n,r]));const names=new Set([...prev.keys(),...rows.map(r=>r.n)]);
     for(const nm of names){const a=prev.get(nm)||{z:0,a:0},b=rows.find(r=>r.n===nm)||{z:0,a:0};for(const o of OPS){const df=b[o.k]-a[o.k];if(df)chg.push({nm,o,df,from:a[o.k],to:b[o.k]})}}
     chg.sort((x,y)=>Math.abs(y.df)-Math.abs(x.df))}
-  h+=`<div class="za-grid"><section class="panel"><div class="phead"><div><h2>Zain vs Asia over time</h2><div class="sub">${dlab(ZA.dates[0])} to ${dfull(ZA.dates[n-1])} · tap a day to open it</div></div>
-    <div class="za-legend">${OPS.map(o=>`<span><i style="background:${o.c}"></i>${o.name}</span>`).join('')}</div></div>
-    <div class="za-chart"><svg viewBox="0 0 1000 220" preserveAspectRatio="none" role="img" aria-label="Zain and Asia daily Customer QoS">
-      <path d="M${X(i)} 0V220" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+  h+=`<div class="za-grid"><section class="panel"><div class="phead"><div><h2>Zain vs Asia over time</h2><div class="sub">${dlab(win[0])} to ${dfull(win[n-1])} · ${n} day${n===1?'':'s'} · tap the chart to open a day</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div class="seg" role="group" aria-label="Period">${[['30','30 days'],['90','90 days'],['all','All']].map(([k,l])=>`<button class="seg-btn" type="button" data-za-period="${k}" aria-pressed="${ZA.period===k}">${l}</button>`).join('')}</div>
+    <div class="za-legend">${OPS.map(o=>`<span><i style="background:${o.c}"></i>${o.name}</span>`).join('')}</div></div></div>
+    <div class="za-chart" data-za-chart="${win.join(',')}"><svg viewBox="0 0 1000 220" preserveAspectRatio="none" role="img" aria-label="Zain and Asia daily Customer QoS">
+      ${wi>=0?`<path d="M${X(wi)} 0V220" stroke="var(--ink-3)" stroke-dasharray="4 4" stroke-width="1" vector-effect="non-scaling-stroke"/>`:''}
       <path d="${line(sZ)}" fill="none" stroke="var(--zain)" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
       <path d="${line(sA)}" fill="none" stroke="var(--asia)" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>
-      <div class="za-days" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${ZA.dates.map(x=>`<button type="button" data-za-day="${x}" aria-pressed="${x===d}" aria-label="${dfull(x)}">${+x.slice(8)}</button>`).join('')}</div></div>
+      ${n<=31?`<div class="za-days" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${win.map(x=>`<button type="button" data-za-day="${x}" aria-pressed="${x===d}" aria-label="${dfull(x)}">${+x.slice(8)}</button>`).join('')}</div>`:`<div class="za-months">${months.map(o=>`<span style="left:${(n>1?o.k/(n-1)*100:50).toFixed(2)}%">${MON[+o.m.slice(5)-1]}</span>`).join('')}</div>`}</div>
     <div class="za-peaks"><div><div class="sub">Zain peak</div><b>${fmtN(pz.m)}</b> <span class="sub">· ${pkd(pz.ds)}</span></div><div><div class="sub">Asia peak</div><b>${fmtN(pa.m)}</b> <span class="sub">· ${pkd(pa.ds)}</span></div></div></section>
     <section class="panel"><div class="phead"><div><h2>Day changes</h2><div class="sub">${p?dlab(p)+' → '+dlab(d)+' · '+chg.length+' change'+(chg.length===1?'':'s'):'First day loaded'}</div></div></div>
     <div class="za-ch">${chg.map(c=>`<div class="row"><span class="ic ${c.df>0?'up':'dn'}" aria-hidden="true">${c.df>0?'↑':'↓'}</span><span class="who"><b>${esc(c.nm)}</b><span>on ${c.o.name} · ${fmtN(c.from)} → ${fmtN(c.to)}</span></span><span class="amt ${c.df>0?'up':'dn'}">${sgn(c.df)}</span></div>`).join('')||`<div class="sub" style="padding:10px 0">${p?'No changes from '+dlab(p)+'.':'Nothing to compare with yet.'}</div>`}</div></section></div>`;
@@ -1857,38 +1865,57 @@ function renderZaDayList(){
   const el=$('#zaDayList');if(!el)return;
   el.innerHTML=ZA.dates.slice().reverse().map(d=>{const z=zaSum(d,'z'),a=zaSum(d,'a');return `<tr><td>${dfull(d)}</td><td class="r num">${fmtN(z)}</td><td class="r num">${fmtN(a)}</td><td class="r num">${fmtN(z+a)}</td></tr>`}).join('')||'<tr><td colspan="4" class="sub">No days yet.</td></tr>';
 }
-/* import: one sheet per day; header row has "Zain" and "Asia"; rows until TOTAL */
-function zaParseSheet(aoa){
-  let hr=-1,zc=-1,ac=-1;
-  for(let r=0;r<Math.min(aoa.length,12)&&hr<0;r++){const row=aoa[r]||[];row.forEach((c,j)=>{const t=clean(c).toLowerCase();if(t==='zain')zc=j;if(t==='asia'||t==='asiacell')ac=j});if(zc>=0&&ac>=0)hr=r;else{zc=ac=-1}}
-  if(hr<0)return null;
-  const nc=Math.max(0,Math.min(zc,ac)-1),out=[];
-  for(let r=hr+1;r<aoa.length;r++){
-    const row=aoa[r]||[],n=clean(row[nc]);if(!n)continue;
-    if(/^(grand\s*)?total$/i.test(n))break;
-    const num=v=>{const x=typeof v==='number'?v:parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0};
-    const z=num(row[zc]),a=num(row[ac]);if(!z&&!a)continue;
-    out.push({n,z,a});
-  }
-  return out;
+/* import: each sheet holds one or more day blocks: a title (date) row, a header row with "Zain" and "Asia", company rows, then TOTAL.
+   The date comes from the block title, else the sheet name; a day without a year ("3rd of May") takes month/year from the title ("MAY_2026"). */
+function zaMonthYear(s){s=String(s||'');const y=(s.match(/\b(20\d\d)\b/)||[])[1];const m=s.match(/[A-Za-z]{3,9}/g)||[];let mi=-1;for(const w of m){const i=MON.findIndex(x=>w.toLowerCase().startsWith(x.toLowerCase()));if(i>=0&&w.toLowerCase()!=='of'){mi=i;break}}return {y,mi}}
+function zaDate(...srcs){
+  for(const s of srcs){if(s==null)continue;const d=parseDateText(String(s).replace(/_/g,' '));if(d)return d}
+  /* partial: day (+month) from the first source that has a day, month/year from any source */
+  let day=null,mi=-1,y=null;
+  for(const s of srcs){if(s==null)continue;const t=String(s).replace(/_/g,' ');
+    if(day==null){const m=t.match(/^\s*(\d{1,2})(?:st|nd|rd|th)?\b/i);if(m&&+m[1]>=1&&+m[1]<=31)day=+m[1]}
+    const my=zaMonthYear(t);if(mi<0&&my.mi>=0)mi=my.mi;if(!y&&my.y)y=my.y}
+  return day&&mi>=0&&y?y+'-'+String(mi+1).padStart(2,'0')+'-'+String(day).padStart(2,'0'):null;
+}
+function zaParseSheet(name,aoa){
+  const num=v=>{const x=typeof v==='number'?v:parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0};
+  const heads=[];
+  aoa.forEach((row,r)=>{let zc=-1,ac=-1;(row||[]).forEach((c,j)=>{const t=clean(c).toLowerCase();if(t==='zain'&&zc<0)zc=j;if((t==='asia'||t==='asiacell')&&ac<0)ac=j});if(zc>=0&&ac>=0)heads.push({r,zc,ac})});
+  const firstText=r=>(aoa[r]||[]).find(c=>typeof c==='string'&&clean(c))||null;
+  const blocks=[];
+  heads.forEach((h,k)=>{
+    /* title: nearest text cell in the 3 rows above the header that is not "ISP"/"Customer QoS" */
+    let title=null;for(let r=h.r-1;r>=Math.max(0,h.r-3);r--){const t=firstText(r);if(t&&!/^(isp|customer qos)/i.test(clean(t))){title=t;break}}
+    const d=k===0?zaDate(title,name,firstText(0)):zaDate(title,firstText(0));
+    const nc=Math.max(0,Math.min(h.zc,h.ac)-1),end=k+1<heads.length?heads[k+1].r:aoa.length,rows=[];let tot=null;
+    for(let r=h.r+1;r<end;r++){const row=aoa[r]||[],n=clean(row[nc]);if(!n)continue;
+      if(/^(grand\s*)?total$/i.test(n)){tot={z:num(row[h.zc]),a:num(row[h.ac])};break}
+      if(/^(isp|customer qos)$/i.test(n)||zaDate(n))break;
+      const z=num(row[h.zc]),a=num(row[h.ac]);if(z||a)rows.push({n,z,a})}
+    const sz=rows.reduce((x,r)=>x+r.z,0),sa=rows.reduce((x,r)=>x+r.a,0);
+    blocks.push({d,rows,label:title?clean(title):name,check:tot?(Math.abs(tot.z-sz)<1&&Math.abs(tot.a-sa)<1):null});
+  });
+  return blocks;
 }
 const zaMsg=(t,err)=>{$('#zaPending').innerHTML=t?`<div class="msg${err?' err':''}" role="status">${esc(t)}</div>`:''};
 async function zaHandle(files){
   if(!canWrite){zaMsg('Only admins can add data.',true);return}
   if(!window.XLSX){zaMsg('The Excel reader did not load. Check your connection and reopen the page.',true);return}
   zaMsg('Reading '+files.length+' file(s)...');zaPending=null;
-  const merged={},skipped=[];
+  const merged={},skipped=[],bad=[],dupes=[];
   try{for(const f of files){const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
     for(const name of wb.SheetNames){const aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:null});
-      let d=parseDateText(name);if(!d){const c=aoa.slice(0,3).flat().find(v=>typeof v==='string'&&parseDateText(v.replace(/_/g,' ')));if(c)d=parseDateText(c.replace(/_/g,' '))}
-      const rows=d?zaParseSheet(aoa):null;if(!d||!rows||!rows.length){skipped.push(name);continue}merged[d]=rows}}}
+      const bl=zaParseSheet(name,aoa);if(!bl.length)continue;
+      for(const x of bl){if(!x.d||!x.rows.length){skipped.push(name===x.label?name:name+' ('+x.label+')');continue}
+        if(merged[x.d]&&JSON.stringify(merged[x.d])!==JSON.stringify(x.rows))dupes.push(x.d);
+        merged[x.d]=x.rows;if(x.check===false)bad.push(x.d)}}}}
   catch(e){zaMsg('Could not read the file. Use a valid .xlsx or .xls file.',true);return}
   const ds=Object.keys(merged).sort();
   if(!ds.length){zaMsg('No Zain & Asia days found. Each sheet needs a date in its name and a header row with Zain and Asia.',true);return}
   zaPending=merged;
   const sZ=d=>merged[d].reduce((x,r)=>x+r.z,0),sA=d=>merged[d].reduce((x,r)=>x+r.a,0);
-  $('#zaPending').innerHTML=`<div class="msg"><b>${ds.length} day${ds.length>1?'s':''} ready</b>${skipped.length?` <span class="sub">· skipped: ${esc(skipped.join(', '))}</span>`:''}
-    <div class="scroll"><table class="dtbl" style="margin-top:6px"><thead><tr><th>Date</th><th class="r">Zain</th><th class="r">Asia</th><th class="r">Total</th><th></th></tr></thead><tbody>${ds.map(d=>`<tr><td>${dfull(d)}</td><td class="r num">${fmtN(sZ(d))}</td><td class="r num">${fmtN(sA(d))}</td><td class="r num">${fmtN(sZ(d)+sA(d))}</td><td>${ZA.days[d]?'<span class="status gone">Replaces</span>':'<span class="status new">New</span>'}</td></tr>`).join('')}</tbody></table></div>
+  $('#zaPending').innerHTML=`<div class="msg"><b>${ds.length} day${ds.length>1?'s':''} ready</b>${skipped.length?`<div class="sub">Skipped (no day or no Zain/Asia table): ${esc(skipped.join(', '))}</div>`:''}${bad.length?`<div class="sub" style="color:var(--down)">Company rows don’t add up to the TOTAL row on: ${esc(bad.map(dlab).join(', '))}</div>`:''}${dupes.length?`<div class="sub">Found twice with different numbers (the last one is used): ${esc(dupes.map(dlab).join(', '))}</div>`:''}
+    <div class="scroll"><table class="dtbl" style="margin-top:6px"><thead><tr><th>Date</th><th class="r">Zain</th><th class="r">Asia</th><th class="r">Total</th><th></th></tr></thead><tbody>${ds.map(d=>`<tr><td>${dfull(d)}${bad.includes(d)?' ⚠':''}</td><td class="r num">${fmtN(sZ(d))}</td><td class="r num">${fmtN(sA(d))}</td><td class="r num">${fmtN(sZ(d)+sA(d))}</td><td>${ZA.days[d]?'<span class="status gone">Replaces</span>':'<span class="status new">New</span>'}</td></tr>`).join('')}</tbody></table></div>
     <div style="display:flex;gap:8px;margin-top:10px"><button class="btn primary small" type="button" id="zaCommit">Publish to console</button><button class="btn small" type="button" id="zaCancel">Cancel</button></div></div>`;
 }
 async function zaCommit(){
@@ -2056,7 +2083,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-22.1';
+const APP_VERSION='2026-11-22.2';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;
