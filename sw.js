@@ -15,7 +15,7 @@
  *     stale-while-revalidate: instant from cache, refreshed in the background.
  *   - Firebase data, sign-in and Google APIs are never cached or touched here.
  */
-const VERSION = '2026-11-22.6';
+const VERSION = '2026-11-22.7';
 const APP_CACHE = 'iigw-app-' + VERSION;
 const CDN_CACHE = 'iigw-cdn-v1';
 
@@ -30,12 +30,12 @@ const APP_FILES = [
   './assets/logos/jazeera.png',
   './assets/logos/zain-iraq.png',
   './assets/logos/asiacell.svg',
-  './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png',
-  './assets/icons/icon-maskable-512.png',
-  './assets/icons/apple-touch-icon.png',
-  './assets/icons/favicon-32.png',
-  './assets/icons/moc-emblem.svg'
+  './assets/icons/itpc-icon-192.png',
+  './assets/icons/itpc-icon-512.png',
+  './assets/icons/itpc-icon-maskable-512.png',
+  './assets/icons/itpc-apple-touch-icon.png',
+  './assets/icons/itpc-favicon-32.png',
+  './assets/icons/itpc-favicon-48.png'
 ];
 const CDN_HOSTS = ['cdnjs.cloudflare.com', 'www.gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
