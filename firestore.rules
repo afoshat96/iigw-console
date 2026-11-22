@@ -8,6 +8,7 @@ rules_version = '2';
 //   • users/{uid}.role must be "viewer" (read only) or "admin" (read + write).
 //   • Optional users/{uid}.mustChangePassword = true (boolean): the person must set their own password
 //     on first sign-in; until then they cannot read any data.
+//   • Optional users/{uid}.backbone = true (boolean): can see the Backbone (PRTG map) section.
 //   • Nobody can create users/{uid} or change a role from the website; admins add people in the Firebase console.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -41,10 +42,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Console settings, e.g. config/backbone = the PRTG map link (it contains PRTG's secret key, so members only)
+    // Console settings. config/backbone holds the PRTG map link (with PRTG's secret key): only accounts whose
+    // users/{uid} has backbone = true (boolean) may read or change it. Other config docs: members read, admins write.
+    function hasBackbone() {
+      return isMember() && profile().data.get('backbone', false) == true;
+    }
     match /config/{doc} {
-      allow read: if isMember();
-      allow write: if isAdmin();
+      allow read: if (doc == 'backbone' && hasBackbone()) || (doc != 'backbone' && isMember());
+      allow write: if isAdmin() && (doc != 'backbone' || hasBackbone());
     }
 
     // Each person may read only their own access record.

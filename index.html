@@ -306,7 +306,7 @@ h1,h2,h3,.disp{font-family:var(--display)}
 .mtop .mt span{display:block;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
 .mtop .btn{min-height:36px;padding:6px 10px;font-size:12px}
 @media (max-width:420px){.mtop .live span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.mtop .live{padding:8px}}
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:4px max(8px,env(safe-area-inset-left,0px)) calc(4px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:4px max(8px,env(safe-area-inset-left,0px)) calc(4px + env(safe-area-inset-bottom,0px))}
 .tb{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;font-size:11px;font-weight:600;color:var(--ink-3);position:relative}
 .tb[aria-current="page"]{color:var(--accent)}
 .tb .badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--accent);color:#fff;border-radius:999px;font-size:10px;font-weight:700;padding:0 6px;line-height:16px}
@@ -892,7 +892,7 @@ const dlab=d=>{const p=d.split('-');return +p[2]+' '+MON[+p[1]-1]};
 const dfull=d=>{const p=d.split('-');return +p[2]+' '+MON[+p[1]-1]+' '+p[0]};
 
 /* state */
-let db=null,user=null,dl=null,canWrite=false,loaded=false,loadTimer=null;
+let db=null,user=null,dl=null,canWrite=false,canBackbone=false,loaded=false,loadTimer=null;
 let DAYS={},R=[],byDate={},DATES=[];
 const F={from:null,to:null,gates:new Set(),types:new Set(),isps:new Set(),vias:new Set(),bill:null,search:''};
 const S={view:'overview',tab:'isp',sort:{rec:{k:'cap',dir:-1},chg:{k:'abs',dir:-1}},ispSort:'cap',open:new Set(),ispF:{},recLimit:60,recQ:'',chgQ:'',param:'total',period:'all',focus:null};
@@ -938,8 +938,10 @@ function setLive(state,label){$$('.live').forEach(el=>{el.dataset.state=state;$(
 
 /* views + logos */
 const VIEWS={overview:'Overview',isp:'ISPs',rec:'Records',chg:'Day changes',za:'Zain & Asia',bb:'Backbone'};
-function setView(v){if(!VIEWS[v])return;S.view=v;if(v!=='overview'&&v!=='za'&&v!=='bb')S.tab=v;render();try{window.scrollTo({top:0})}catch(_){}}
+function setView(v){if(!VIEWS[v]||(v==='bb'&&!canBackbone))return;S.view=v;if(v!=='overview'&&v!=='za'&&v!=='bb')S.tab=v;render();try{window.scrollTo({top:0})}catch(_){}}
 function applyView(){
+  if(S.view==='bb'&&!canBackbone)S.view='overview';
+  $$('[data-view="bb"]').forEach(b=>{b.hidden=!canBackbone});
   $$('[data-v]').forEach(el=>{el.hidden=!el.dataset.v.split(' ').includes(S.view)});
   $$('[data-view]').forEach(b=>{if(b.dataset.view===S.view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   document.body.classList.toggle('za-mode',S.view==='za');document.body.classList.toggle('bb-mode',S.view==='bb');
@@ -2126,7 +2128,7 @@ function stopData(){
 function startData(){
   setLive('connecting','Connecting');
   loadTimer=setTimeout(()=>{if(!loaded){setLive('offline','Not reachable');toast('Still trying to reach the live data...')}},10000);
-  unsubBb=db.doc(BB_DOC).onSnapshot(d=>{
+  if(canBackbone)unsubBb=db.doc(BB_DOC).onSnapshot(d=>{
     const x=d.exists?(d.data()||{}):{};BB.loaded=true;BB.err=null;
     const url=typeof x.url==='string'?x.url:'';if(url!==BB.url){BB.url=url;BB.reach=null;BB.frameUrl=null}
     BB.name=x.name||'';BB.w=+x.w||3000;BB.h=+x.h||1500;
@@ -2159,12 +2161,12 @@ async function start(){
   try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();auth=firebase.auth()}
   catch(e){setLive('offline','Offline');showGate('error','The sign-in service did not load. Check your connection and reload the page.');return}
   auth.onAuthStateChanged(async u=>{
-    stopData();role=null;
+    stopData();role=null;canBackbone=false;
     if(!u){$('#whoami').hidden=true;tmpPw='';showGate('signin');return}
     showGate('checking');
     let must=false;
-    try{const s=await db.doc(USERS+'/'+u.uid).get(),x=s.exists?(s.data()||{}):null;role=x?String(x.role||'').toLowerCase():null;must=!!(x&&x.mustChangePassword===true)}
-    catch(e){role=null}
+    try{const s=await db.doc(USERS+'/'+u.uid).get(),x=s.exists?(s.data()||{}):null;role=x?String(x.role||'').toLowerCase():null;must=!!(x&&x.mustChangePassword===true);canBackbone=!!(x&&x.backbone===true)}
+    catch(e){role=null;canBackbone=false}
     if(role!=='admin'&&role!=='viewer'){showGate('denied','Signed in as '+(u.email||'this account')+', but it hasn’t been given access. Ask an admin to add you.');return}
     if(must){showGate('newpw');return}
     enterApp(u);
@@ -2235,7 +2237,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-22.4';
+const APP_VERSION='2026-11-22.5';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;
