@@ -544,6 +544,8 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 .za-tbl td{padding:9px 8px;border-bottom:1px solid var(--line-2)}
 .za-tbl .r{text-align:right;font-family:var(--mono)}
 .za-tbl .mute{color:var(--ink-3)}
+.za-tbl tr.za-edit{cursor:pointer}.za-tbl tr.za-edit:hover td,.za-tbl tr.za-edit:focus-visible td{background:var(--line-2)}
+.btn.danger{color:var(--down);border-color:color-mix(in srgb,var(--down) 40%,transparent)}
 .za-tbl tfoot td{font-weight:700;border-bottom:0}
 .za-tbl .splitbar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--line-2);min-width:90px}
 .za-tbl .splitbar span{display:block;height:100%}
@@ -557,7 +559,7 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
   .za[data-mob="Zain"] .za-split,.za[data-mob="Asia"] .za-split{display:none}
   .za-hero .big{font-size:34px}
   .za-step{flex:1}.za-step span{flex:1;min-width:0}
-  .za-acts{width:100%}.za-acts .btn{flex:1}
+  .za-acts{width:100%;display:grid;grid-template-columns:1fr 1fr}.za-acts .btn{width:100%}
   .op-row{grid-template-columns:minmax(0,1fr) auto}.op-row .track{grid-column:1/-1;grid-row:2;margin-bottom:8px}
 }
 @media (min-width:1100px){.za-ops{grid-template-columns:repeat(2,minmax(0,1fr))}.za-grid{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}}
@@ -796,6 +798,31 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
     </div>
   </form>
   <div class="sh-foot"><span></span><button class="btn primary" id="bbSave" type="button">Save link</button></div>
+</section>
+
+<section class="sheet" id="zaDaySheet" hidden role="dialog" aria-modal="true" aria-label="New Zain and Asia day">
+  <div class="sh-head"><h2>New Zain &amp; Asia day</h2><button class="btn small" id="closeZaDay" type="button">Cancel</button></div>
+  <div class="sh-body">
+    <div class="field"><label for="zdDate">New date</label><input type="date" id="zdDate"></div>
+    <div class="field"><label for="zdFrom">Copy companies from</label><select id="zdFrom"></select></div>
+    <p class="sub">Every company is copied with the same Zain and Asia numbers. After creating, tap a company in <b>By company</b> to change only the numbers that moved.</p>
+  </div>
+  <div class="sh-foot"><span></span><button class="btn primary" id="zaCreateDay" type="button">Create day</button></div>
+</section>
+
+<section class="sheet" id="zaRecSheet" hidden role="dialog" aria-modal="true" aria-label="Zain and Asia record">
+  <div class="sh-head"><h2 id="zrTitle">New record</h2><button class="btn small" id="closeZaRec" type="button">Cancel</button></div>
+  <form class="sh-body" onsubmit="return false">
+    <input type="hidden" id="zrMode">
+    <div class="field" id="zrDateF"><label for="zrDate">Date</label><input type="date" id="zrDate"></div>
+    <div class="field"><label for="zrName">Company</label><input type="text" id="zrName" list="zrNames" placeholder="EARTHLINK, HALA SAT" autocomplete="off"><datalist id="zrNames"></datalist></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label for="zrZ">Zain (Mb/s)</label><input type="number" step="any" min="0" inputmode="decimal" id="zrZ"></div>
+      <div class="field"><label for="zrA">Asia (Mb/s)</label><input type="number" step="any" min="0" inputmode="decimal" id="zrA"></div>
+    </div>
+    <p class="sub" id="zrNote" style="margin:0"></p>
+  </form>
+  <div class="sh-foot"><button class="btn small danger" id="zaDelRec" type="button" hidden>Delete company</button><button class="btn primary" id="zaSaveRec" type="button">Save</button></div>
 </section>
 
 <section class="sheet" id="zaSheet" hidden role="dialog" aria-modal="true" aria-label="Add Zain and Asia data">
@@ -1807,6 +1834,13 @@ document.addEventListener('click',e=>{
   if(t.closest('#bbExit')){bbFull(false);return}
   if(el=t.closest('[data-bb-zoom]')){BB.zoom=el.dataset.bbZoom;bbLayout();renderBB();return}
   if(t.closest('#zaAdd')){openSheet('zaSheet');renderZaDayList();return}
+  if(t.closest('#zaNewDay')){zaOpenNewDay();return}
+  if(t.closest('#zaNewRec')){zaOpenRec(null);return}
+  if(t.closest('#zaCreateDay')){zaCreateDay();return}
+  if(t.closest('#zaSaveRec')){zaSaveRec();return}
+  if(t.closest('#zaDelRec')){zaDelRec();return}
+  if(t.closest('#closeZaDay')||t.closest('#closeZaRec')){closeSheets();return}
+  if(canWrite&&(el=t.closest('[data-za-edit]'))){zaOpenRec(el.dataset.zaEdit);return}
   if(t.closest('#closeZa')){closeSheets();return}
   if(t.closest('#zaExport')){zaExport();return}
   if(t.closest('#zaCommit')){zaCommit();return}
@@ -1842,7 +1876,7 @@ document.addEventListener('input',e=>{
   if(id==='recQ'){S.recQ=e.target.value;S.recLimit=60;renderTabs()}
   if(id==='chgQ'){S.chgQ=e.target.value;renderTabs()}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen)closeSheets();else if(e.key==='Escape'&&BB.full)bbFull(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.zaEdit){zaOpenRec(e.target.dataset.zaEdit);return}if(e.key==='Escape'&&sheetOpen)closeSheets();else if(e.key==='Escape'&&BB.full)bbFull(false)});
 const drop=$('#drop');
 ['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over')}));
 ['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over')}));
@@ -1874,7 +1908,7 @@ const gb=v=>(v/1000).toFixed(2);
 const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'0%';
 function renderZA(){
   const box=$('#zaBox');
-  const acts=canWrite?`<div class="za-acts">${ZA.dates.length?'<button class="btn" type="button" id="zaExport">Export '+MON[+zaDay().slice(5,7)-1]+' Excel</button>':''}<button class="btn primary" type="button" id="zaAdd">+ Add Zain &amp; Asia data</button></div>`:'';
+  const acts=canWrite?`<div class="za-acts">${ZA.dates.length?'<button class="btn" type="button" id="zaExport">Export '+MON[+zaDay().slice(5,7)-1]+' Excel</button>':''}${ZA.dates.length?'<button class="btn" type="button" id="zaNewDay">New day</button><button class="btn" type="button" id="zaNewRec">New record</button>':''}<button class="btn primary" type="button" id="zaAdd">+ Add Zain &amp; Asia data</button></div>`:'';
   if(!ZA.dates.length){
     const msg=!db?'Live data is not available here.':!ZA.loaded?'Connecting to live data...':ZA.err?'Zain & Asia data is not shared with this account yet ('+ZA.err+').':canWrite?'No Zain & Asia data yet. Tap “+ Add Zain & Asia data” and choose the Excel file.':'No Zain & Asia data has been added yet.';
     box.innerHTML=`<div class="za-bar"><span></span>${acts}</div><div class="panel za-empty">${esc(msg)}</div>`;return;
@@ -1925,8 +1959,8 @@ function renderZA(){
     <div class="za-ch">${chg.map(c=>`<div class="row"><span class="ic ${c.df>0?'up':'dn'}" aria-hidden="true">${c.df>0?'↑':'↓'}</span><span class="who"><b>${esc(c.nm)}</b><span>on ${c.o.name} · ${fmtN(c.from)} → ${fmtN(c.to)}</span></span><span class="amt ${c.df>0?'up':'dn'}">${sgn(c.df)}</span></div>`).join('')||`<div class="sub" style="padding:10px 0">${p?'No changes from '+dlab(p)+'.':'Nothing to compare with yet.'}</div>`}</div></section></div>`;
   // by company
   const comp=rows.slice().sort((a,b)=>(b.z+b.a)-(a.z+a.a));
-  h+=`<section class="panel"><div class="phead"><div><h2>By company</h2><div class="sub">Each company's QoS on Zain and on Asia · ${dlab(d)}</div></div></div><div class="scroll"><table class="za-tbl"><thead><tr><th>Company</th><th class="r">Zain</th><th class="r">Asia</th><th class="r">Total</th><th style="width:28%">Zain / Asia split</th></tr></thead><tbody>
-    ${comp.map(r=>{const t=r.z+r.a;return `<tr><td><span class="nm">${logoTile(r.n)}${esc(r.n)}</span></td><td class="r${r.z?'':' mute'}">${r.z?fmtN(r.z):'—'}</td><td class="r${r.a?'':' mute'}">${r.a?fmtN(r.a):'—'}</td><td class="r">${fmtN(t)}</td><td><span class="splitbar"><span style="width:${t?(r.z/t*100).toFixed(1):0}%;background:var(--zain)"></span><span style="width:${t?(r.a/t*100).toFixed(1):0}%;background:var(--asia)"></span></span></td></tr>`}).join('')}
+  h+=`<section class="panel"><div class="phead"><div><h2>By company</h2><div class="sub">Each company's QoS on Zain and on Asia · ${dlab(d)}${canWrite?' · tap a company to edit':''}</div></div></div><div class="scroll"><table class="za-tbl"><thead><tr><th>Company</th><th class="r">Zain</th><th class="r">Asia</th><th class="r">Total</th><th style="width:28%">Zain / Asia split</th></tr></thead><tbody>
+    ${comp.map(r=>{const t=r.z+r.a;return `<tr${canWrite?` class="za-edit" data-za-edit="${esc(r.n)}" tabindex="0" title="Edit ${esc(r.n)}"`:''}><td><span class="nm">${logoTile(r.n)}${esc(r.n)}</span></td><td class="r${r.z?'':' mute'}">${r.z?fmtN(r.z):'—'}</td><td class="r${r.a?'':' mute'}">${r.a?fmtN(r.a):'—'}</td><td class="r">${fmtN(t)}</td><td><span class="splitbar"><span style="width:${t?(r.z/t*100).toFixed(1):0}%;background:var(--zain)"></span><span style="width:${t?(r.a/t*100).toFixed(1):0}%;background:var(--asia)"></span></span></td></tr>`}).join('')}
     </tbody><tfoot><tr><td>Total</td><td class="r">${fmtN(Z)}</td><td class="r">${fmtN(A)}</td><td class="r">${fmtN(T)}</td><td></td></tr></tfoot></table></div></section>`;
   box.innerHTML=h;
 }
@@ -1996,6 +2030,54 @@ async function zaCommit(){
     await b.commit();
     zaPending=null;ZA.sel=null;zaMsg(ds.length+' day(s) published.');toast('Zain & Asia data published');renderZaDayList();
   }catch(e){if(btn)btn.disabled=false;zaMsg('Could not save'+(e&&e.code?' ('+e.code+')':'')+'. Check your connection and try again.',true)}
+}
+/* hand edits: new day (copy of another day), new record, edit or delete a company */
+async function zaSaveDay(d,rows){if(!db)throw new Error('offline');await db.doc(ZA_COL+'/'+d).set({date:d,rows,updatedAt:Date.now()})}
+const zaClone=d=>(ZA.days[d]?ZA.days[d].rows:[]).map(r=>({n:r.n,z:+r.z||0,a:+r.a||0}));
+function zaOpenNewDay(){
+  if(!canWrite||!ZA.dates.length)return;
+  openSheet('zaDaySheet');
+  $('#zdDate').value=nextDay(ZA.dates[ZA.dates.length-1]);
+  $('#zdFrom').innerHTML=ZA.dates.slice().reverse().slice(0,60).map(d=>`<option value="${d}">${dfull(d)} (${ZA.days[d].rows.length} companies)</option>`).join('');
+}
+async function zaCreateDay(){
+  const d=$('#zdDate').value,src=$('#zdFrom').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){toast('Pick a date');return}
+  if(ZA.days[d]){toast('That day already exists. Open it and tap a company to edit.');return}
+  if(!ZA.days[src]){toast('Pick a day to copy from');return}
+  if(await guard(()=>zaSaveDay(d,zaClone(src)),'Day created. Tap a company to edit its numbers.')){closeSheets();ZA.days[d]={date:d,rows:zaClone(src)};zaRebuild();ZA.sel=d;render()}
+}
+function zaOpenRec(name){
+  if(!canWrite||!ZA.dates.length)return;
+  const d=zaDay(),edit=name!=null,r=edit?zaRows(d).find(x=>x.n===name):null;
+  if(edit&&!r){toast('That company is not on this day');return}
+  openSheet('zaRecSheet');
+  $('#zrMode').value=edit?d:'';
+  $('#zrTitle').textContent=edit?'Edit '+name:'New record';
+  $('#zrDateF').hidden=edit;$('#zrDate').value=d;
+  $('#zrName').value=edit?name:'';$('#zrName').readOnly=edit;
+  $('#zrZ').value=edit?r.z:'';$('#zrA').value=edit?r.a:'';
+  $('#zrNames').innerHTML=[...new Set(ZA.dates.slice(-60).flatMap(x=>ZA.days[x].rows.map(y=>y.n)))].sort().map(n=>`<option value="${esc(n)}">`).join('');
+  $('#zrNote').textContent=edit?dfull(d)+'. Set both to 0 to take the company off this day.':'If the company is already on that day, its numbers are replaced.';
+  $('#zaDelRec').hidden=!edit;
+  (edit?$('#zrZ'):$('#zrName')).focus();
+}
+async function zaSaveRec(){
+  const editDay=$('#zrMode').value,d=editDay||$('#zrDate').value,n=$('#zrName').value.replace(/\s+/g,' ').trim();
+  const zr=$('#zrZ').value,ar=$('#zrA').value,z=zr===''?0:+zr,a=ar===''?0:+ar;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){toast('Pick a date');return}
+  if(!ZA.days[d]){toast('That day does not exist yet. Use New day first.');return}
+  if(!n){toast('Enter the company name');return}
+  if(!isFinite(z)||!isFinite(a)||z<0||a<0){toast('Enter Zain and Asia in Mb/s');return}
+  if(!editDay&&zr===''&&ar===''){toast('Enter Zain or Asia in Mb/s');return}
+  const rows=zaClone(d),k=rows.findIndex(r=>r.n.toLowerCase()===n.toLowerCase());
+  if(z===0&&a===0){if(k>=0)rows.splice(k,1)}else if(k>=0){rows[k].z=z;rows[k].a=a}else rows.push({n,z,a});
+  if(await guard(()=>zaSaveDay(d,rows),k>=0||editDay?'Saved':'Company added')){closeSheets();ZA.days[d]={...ZA.days[d],rows};zaRebuild();ZA.sel=d;render()}
+}
+async function zaDelRec(){
+  const d=$('#zrMode').value,n=$('#zrName').value;if(!d||!ZA.days[d])return;
+  const rows=zaClone(d).filter(r=>r.n!==n);
+  if(await guard(()=>zaSaveDay(d,rows),n+' removed from '+dlab(d))){closeSheets();ZA.days[d]={...ZA.days[d],rows};zaRebuild();ZA.sel=d;render()}
 }
 function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
 const MONL=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -2254,7 +2336,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-22.8';
+const APP_VERSION='2026-11-23.1';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;
