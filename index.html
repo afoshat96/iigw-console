@@ -589,6 +589,46 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
 .bb-fail h2{font-size:17px}
 .bb-fail ol{margin:0;padding-left:20px;line-height:1.7;color:var(--ink-2)}
 .bb-fail .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.bbwrap{display:flex;flex-direction:column;gap:14px}.bb-tabs{align-self:flex-start}.bb-tabs .seg-btn{font-size:13px;padding:7px 16px}
+.acc-h b{display:block;font-family:var(--display);font-size:16px}.acc-h span{font-size:12.5px;color:var(--ink-3)}
+.acc-flag{display:flex;gap:12px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--down) 45%,transparent);background:var(--down-soft);border-radius:12px;padding:12px 14px;color:var(--down)}
+.acc-flag .fl{font-size:20px;line-height:1}.acc-flag b{font-size:14px}
+.acc-flag .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.acc-flag .chip{border:1px solid color-mix(in srgb,var(--down) 35%,transparent);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600}
+.acc-flag .chip em{font-style:normal;color:var(--down);margin-left:4px}
+.acc-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.acc-kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;box-shadow:var(--shadow)}
+.acc-kpi .k{font-size:12px;color:var(--ink-3);font-weight:600}.acc-kpi .v{font-family:var(--mono);font-size:22px;font-weight:700;margin:2px 0}.acc-kpi .s{font-size:12px;color:var(--ink-3)}
+.acc-kpi.bad .v,.acc-kpi.bad .k{color:var(--down)}
+.acc-devs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.acc-dev{--lv:var(--up);text-align:left;display:flex;flex-direction:column;gap:5px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);color:var(--ink);position:relative}
+.acc-dev[data-lvl="amber"]{--lv:#C98A00}.acc-dev[data-lvl="red"]{--lv:var(--down)}
+.acc-dev[data-lvl="red"]{border-color:color-mix(in srgb,var(--down) 55%,transparent)}
+.acc-dev[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:-1px}
+.acc-dev .acc-top{display:flex;justify-content:space-between;gap:6px;align-items:center}.acc-dev .acc-top b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-dev .acc-dn{flex:none;background:var(--down);color:#fff;border-radius:999px;font-size:10.5px;font-weight:700;padding:2px 7px}
+.acc-dev .acc-pc{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--lv)}.acc-dev .acc-pc small{font-size:14px}
+.acc-dev .acc-bar{height:7px;border-radius:99px;background:var(--line-2);overflow:hidden}.acc-dev .acc-bar span{display:block;height:100%;background:var(--lv);border-radius:99px}
+.acc-dev .acc-ln{font-size:12px;color:var(--ink-2)}.acc-dev .acc-ln.mute{color:var(--ink-3)}
+.acc-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.acc-tools input[type=search]{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:7px 10px;font-size:13px;min-width:170px}
+.acc-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-3);margin-bottom:8px}.acc-legend span{display:inline-flex;align-items:center;gap:6px}
+.acc-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.acc-map{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.acc-map .slot{display:flex;gap:8px;align-items:flex-start}.acc-map .sl{flex:none;width:44px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-top:9px}
+.acc-map .pts{display:flex;flex-wrap:wrap;gap:4px}
+.pt{min-width:46px;border-radius:7px;padding:4px 6px;font-family:var(--mono);font-size:11.5px;font-weight:700;line-height:1.15;display:flex;flex-direction:column;align-items:center;border:1px solid transparent}
+.pt small{font-size:9.5px;font-weight:600;opacity:.75}
+.pt[data-st="used"],.acc-legend i[data-st="used"]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
+.pt[data-st="backup"],.acc-legend i[data-st="backup"]{background:#FFF4D6;color:#8A5A00;border-color:#E9C46A}
+.pt[data-st="free"],.acc-legend i[data-st="free"]{background:var(--surface);color:var(--ink-3);border:1px dashed var(--line)}
+.pt[data-st="down"],.acc-legend i[data-st="down"]{background:var(--down);color:#fff;border-color:var(--down)}
+.pt[data-dim]{opacity:.22}
+.acc-tbl .mono{font-family:var(--mono)}.acc-tbl tr[data-st="down"] td{background:var(--down-soft)}
+.dnb{background:var(--down);color:#fff;border-radius:5px;font-size:10.5px;font-weight:700;padding:1px 6px}
+.acc-chk{display:flex;gap:8px;align-items:center;font-size:14px;padding:6px 0}
+.acc-del{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line-2);padding-top:12px;margin-top:4px}.acc-del input{border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:var(--surface);color:var(--ink)}
+@media (max-width:700px){.acc-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.acc-devs{grid-template-columns:repeat(2,minmax(0,1fr))}.acc-tools input[type=search]{flex:1;min-width:0}}
 </style>
 </head>
 <body>
@@ -707,7 +747,11 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
   </section>
 
   <section class="za" id="zaBox" data-v="za" aria-label="Zain and Asia"></section>
-  <section class="bb" id="bbBox" data-v="bb" aria-label="Backbone map"></section>
+  <section class="bbwrap" data-v="bb" aria-label="Backbone">
+    <div class="seg bb-tabs" role="tablist" aria-label="Backbone sections"><button class="seg-btn" type="button" data-bb-tab="acc" aria-pressed="true">ACC</button><button class="seg-btn" type="button" data-bb-tab="map" aria-pressed="false">PRTG map</button></div>
+    <div class="bb" id="accBox" aria-label="ACC devices"></div>
+    <div class="bb" id="bbBox" aria-label="Backbone map" hidden></div>
+  </section>
 
   <section class="panel" data-v="isp rec chg">
     <div id="tabBody"></div>
@@ -798,6 +842,39 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
     </div>
   </form>
   <div class="sh-foot"><span></span><button class="btn primary" id="bbSave" type="button">Save link</button></div>
+</section>
+
+<section class="sheet" id="accPortSheet" hidden role="dialog" aria-modal="true" aria-label="ACC port">
+  <div class="sh-head"><h2 id="apTitle">Port</h2><button class="btn small" id="closeAp" type="button">Cancel</button></div>
+  <form class="sh-body" onsubmit="return false">
+    <input type="hidden" id="apIdx">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label for="apPort">Port</label><input type="text" id="apPort" placeholder="1/1/c1" autocomplete="off"></div>
+      <div class="field"><label for="apType">Port type</label><input type="text" id="apType" list="apTypes" placeholder="100G" autocomplete="off"><datalist id="apTypes"></datalist></div>
+    </div>
+    <div class="field"><label for="apDesc">Connected to (leave empty if the port is free)</label><input type="text" id="apDesc" list="apDescs" placeholder="Taurus ISP, Towards MAM-DST" autocomplete="off"><datalist id="apDescs"></datalist></div>
+    <div class="field"><label for="apNote">Note</label><input type="text" id="apNote" placeholder="Backup" autocomplete="off"></div>
+    <label class="acc-chk"><input type="checkbox" id="apDown"> Port is <b>DOWN</b></label>
+  </form>
+  <div class="sh-foot"><button class="btn small danger" id="apDel" type="button" hidden>Delete port</button><button class="btn primary" id="apSave" type="button">Save</button></div>
+</section>
+
+<section class="sheet" id="accDevSheet" hidden role="dialog" aria-modal="true" aria-label="ACC device">
+  <div class="sh-head"><h2 id="adTitle">Device</h2><button class="btn small" id="closeAd" type="button">Cancel</button></div>
+  <form class="sh-body" onsubmit="return false">
+    <input type="hidden" id="adId">
+    <div class="field"><label for="adName">Device name</label><input type="text" id="adName" placeholder="MAM-ACC-PH2" autocomplete="off"></div>
+    <div id="adDelNote" class="acc-del"><p class="sub" style="margin:0">To delete this device and all its ports, type its name and tap Delete device.</p><input type="text" id="adConfirm" autocomplete="off" aria-label="Type the device name to confirm"></div>
+  </form>
+  <div class="sh-foot"><button class="btn small danger" id="adDel" type="button" hidden>Delete device</button><button class="btn primary" id="adSave" type="button">Save</button></div>
+</section>
+
+<section class="sheet" id="accSheet" hidden role="dialog" aria-modal="true" aria-label="Import ACC Excel">
+  <div class="sh-head"><h2>Import ACC Excel</h2><button class="btn small" id="closeAcc" type="button">Close</button></div>
+  <div class="sh-body">
+    <label class="drop"><b>Choose the IGW-ACC workbook</b><span>One sheet per device: a title row with the device name, then Port, Port type, description and Note. “/” means the port is free; DOWN in Note marks the port down.</span><input type="file" id="accFile" accept=".xlsx,.xls"></label>
+    <div id="accPending"></div>
+  </div>
 </section>
 
 <section class="sheet" id="zaDaySheet" hidden role="dialog" aria-modal="true" aria-label="New Zain and Asia day">
@@ -972,7 +1049,7 @@ function applyView(){
   $$('[data-v]').forEach(el=>{el.hidden=!el.dataset.v.split(' ').includes(S.view)});
   $$('[data-view]').forEach(b=>{if(b.dataset.view===S.view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   document.body.classList.toggle('za-mode',S.view==='za');document.body.classList.toggle('bb-mode',S.view==='bb');
-  $('#pageEyebrow').textContent=S.view==='bb'?'Backbone · live PRTG map':S.view==='za'?'Zain & Asia · Customer QoS · Mb/s':VIEWS[S.view]+' · all figures in Mb/s';
+  $('#pageEyebrow').textContent=S.view==='bb'?(BB.tab==='acc'?'Backbone · ACC port inventory':'Backbone · live PRTG map'):S.view==='za'?'Zain & Asia · Customer QoS · Mb/s':VIEWS[S.view]+' · all figures in Mb/s';
   $('#pageTitle').textContent=S.view==='bb'?'Backbone':S.view==='za'?(zaDay()?dfull(zaDay()):'Zain & Asia'):DATES.length?rangeText():'IIGW Capacity Console';
   $('#navImport').hidden=!canWrite;
 }
@@ -995,7 +1072,7 @@ function render(){
   applyView();
   renderZaNav();
   if(S.view==='za'){renderZA();renderFooter();return}
-  if(S.view==='bb'){renderBB();renderFooter();return}
+  if(S.view==='bb'){renderBBAll();renderFooter();return}
   if(!DATES.length){renderEmpty();return}
   renderDateInputs();renderChips();renderQuick();renderIspList();renderActive();renderStat();renderNav();
   if(S.view==='overview'){renderKPIs();renderTrend();renderChgMini();renderDays();renderDonut();renderBars('gate','g','#gateBars');renderBars('type','t','#typeBars');renderHeat()}
@@ -1834,6 +1911,21 @@ document.addEventListener('click',e=>{
   if(t.closest('#bbExit')){bbFull(false);return}
   if(el=t.closest('[data-bb-zoom]')){BB.zoom=el.dataset.bbZoom;bbLayout();renderBB();return}
   if(t.closest('#zaAdd')){openSheet('zaSheet');renderZaDayList();return}
+  if(el=t.closest('[data-bb-tab]')){BB.tab=el.dataset.bbTab;render();return}
+  if(el=t.closest('[data-acc-dev]')){ACC.sel=el.dataset.accDev;if(el.dataset.accF)ACC.filter=el.dataset.accF;renderACC();const d=$('.acc-detail');if(d&&el.dataset.accF)d.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(el=t.closest('[data-acc-filter]')){ACC.filter=el.dataset.accFilter;renderACC();return}
+  if(canWrite&&(el=t.closest('[data-acc-port]'))){accOpenPort(+el.dataset.accPort);return}
+  if(t.closest('#accNewPort')){accOpenPort(null);return}
+  if(t.closest('#accEditDev')){accOpenDev(true);return}
+  if(t.closest('#accNewDev')){accOpenDev(false);return}
+  if(t.closest('#accImport')){ACC.pending=null;$('#accPending').innerHTML='';openSheet('accSheet');return}
+  if(t.closest('#accCommit')){accCommit();return}
+  if(t.closest('#accCancel')){ACC.pending=null;$('#accPending').innerHTML='';return}
+  if(t.closest('#apSave')){accSavePort();return}
+  if(t.closest('#apDel')){accDelPort();return}
+  if(t.closest('#adSave')){accSaveDev();return}
+  if(t.closest('#adDel')){accDelDev();return}
+  if(t.closest('#closeAp')||t.closest('#closeAd')||t.closest('#closeAcc')){closeSheets();return}
   if(t.closest('#zaNewDay')){zaOpenNewDay();return}
   if(t.closest('#zaNewRec')){zaOpenRec(null);return}
   if(t.closest('#zaCreateDay')){zaCreateDay();return}
@@ -1868,6 +1960,7 @@ document.addEventListener('change',e=>{
   }
   if(t.id==='file'){handleFiles([...t.files]);t.value=''}
   if(t.id==='zaFile'){zaHandle([...t.files]);t.value=''}
+  if(t.id==='accFile'){accHandle([...t.files]);t.value=''}
 });
 document.addEventListener('input',e=>{
   const id=e.target.id;
@@ -1876,7 +1969,8 @@ document.addEventListener('input',e=>{
   if(id==='recQ'){S.recQ=e.target.value;S.recLimit=60;renderTabs()}
   if(id==='chgQ'){S.chgQ=e.target.value;renderTabs()}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.zaEdit){zaOpenRec(e.target.dataset.zaEdit);return}if(e.key==='Escape'&&sheetOpen)closeSheets();else if(e.key==='Escape'&&BB.full)bbFull(false)});
+document.addEventListener('input',e=>{if(e.target.id==='accQ'){ACC.q=e.target.value;renderACC()}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.accPort!=null&&e.target.tagName==='TR'){accOpenPort(+e.target.dataset.accPort);return}if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.zaEdit){zaOpenRec(e.target.dataset.zaEdit);return}if(e.key==='Escape'&&sheetOpen)closeSheets();else if(e.key==='Escape'&&BB.full)bbFull(false)});
 const drop=$('#drop');
 ['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over')}));
 ['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over')}));
@@ -2125,7 +2219,7 @@ async function zaExport(){
 /* ===== Backbone: the team's PRTG map, shown live through its public (no-login) URL. The URL is kept in Firestore config/backbone
    (members can read, admins can change), never in this public source code. ===== */
 const BB_DOC='config/backbone';
-const BB={url:'',name:'',w:3000,h:1500,loaded:false,err:null,reach:null,zoom:'fit',full:false,frameUrl:null,checkedAt:null};
+const BB={tab:'acc',url:'',name:'',w:3000,h:1500,loaded:false,err:null,reach:null,zoom:'fit',full:false,frameUrl:null,checkedAt:null};
 function bbReset(){Object.assign(BB,{url:'',name:'',loaded:false,err:null,reach:null,frameUrl:null});const f=$('#bbFrame');if(f)f.remove()}
 function bbScale(){
   const fr=$('#bbFrame');if(!fr)return 1;
@@ -2143,14 +2237,19 @@ function bbLayout(){
 /* A no-cors request fails outright when the browser can't reach PRTG or doesn't trust its certificate; that is our signal to show help instead of a blank frame. */
 async function bbProbe(force){
   if(!BB.url||(BB.reach!=null&&!force))return;
-  BB.reach='wait';renderBB();
+  BB.reach='wait';if(BB.tab==='map')renderBB();
   const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),9000);
   try{await fetch(BB.url,{mode:'no-cors',cache:'no-store',signal:ctl.signal,credentials:'omit'});BB.reach='ok'}
   catch(e){BB.reach='bad'}
   clearTimeout(tm);BB.checkedAt=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  if(S.view==='bb')renderBB();
+  if(S.view==='bb'&&BB.tab==='map')renderBB();
 }
 function bbFull(on){BB.full=on;const fr=$('#bbFrame');if(!fr)return;fr.classList.toggle('full',on);$('#bbExit').hidden=!on;document.body.style.overflow=on?'hidden':'';bbLayout()}
+function renderBBAll(){
+  $$('[data-bb-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.bbTab===BB.tab)));
+  $('#accBox').hidden=BB.tab!=='acc';$('#bbBox').hidden=BB.tab!=='map';
+  if(BB.tab==='acc')renderACC();else renderBB();
+}
 function renderBB(){
   const box=$('#bbBox');if(!box)return;
   const host=(()=>{try{return new URL(BB.url).host}catch(_){return ''}})();
@@ -2198,13 +2297,164 @@ async function bbSave(){
 }
 let bbRz;window.addEventListener('resize',()=>{clearTimeout(bbRz);bbRz=setTimeout(()=>{if(S.view==='bb')bbLayout()},80)});
 
+/* ===== ACC: port inventory of the access devices (Backbone → ACC). Firestore acc/{device}: {name,order,ports:[{p,t,d,n}],updatedAt}
+   p = port, t = port type (10G/100G), d = what it connects to ('' = free), n = note (contains "down" = port down) ===== */
+const ACC_COL='acc';
+const ACC={devs:{},list:[],loaded:false,err:null,sel:null,filter:'all',q:'',pending:null};
+const accFree=x=>!x.d,accDown=x=>/\bdown\b/i.test(x.n||'');
+function accStats(dv){
+  const ps=dv.ports||[],tot=ps.length,free=ps.filter(accFree).length,down=ps.filter(accDown).length,used=tot-free;
+  const freeBy={};ps.filter(accFree).forEach(x=>{const t=x.t||'?';freeBy[t]=(freeBy[t]||0)+1});
+  const pct=tot?used/tot*100:0,lvl=pct>=90?'red':pct>=80?'amber':'ok';
+  return {tot,free,used,down,pct,lvl,freeBy};
+}
+function accRebuild(){
+  ACC.list=Object.keys(ACC.devs).sort((a,b)=>(ACC.devs[a].order??999)-(ACC.devs[b].order??999)||ACC.devs[a].name.localeCompare(ACC.devs[b].name));
+  if(ACC.sel&&!ACC.devs[ACC.sel])ACC.sel=null;
+}
+const accSlug=s=>String(s).trim().toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-|-$/g,'')||'DEVICE';
+const accSlot=p=>{const m=String(p).match(/^(.*)\/[^/]+$/);return m?m[1]:''};
+const accShort=p=>String(p).split('/').pop();
+const accTypes=o=>Object.entries(o).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([t,n])=>`${n} × ${esc(t)}`).join(' · ');
+function renderACC(){
+  const box=$('#accBox');if(!box)return;
+  const adm=canWrite;
+  const tools=adm?`<button class="btn" type="button" id="accImport">Import Excel</button><button class="btn" type="button" id="accNewDev">+ Device</button>`:'';
+  if(!ACC.list.length){
+    const msg=!db?'Live data is not available here.':!ACC.loaded?'Connecting…':ACC.err?'ACC data is not shared with this account yet ('+ACC.err+').':adm?'No ACC devices yet. Tap “Import Excel” and choose the IGW-ACC workbook.':'No ACC devices have been added yet.';
+    box.innerHTML=`<div class="bb-bar"><div class="acc-h"><b>ACC devices</b><span>Port inventory</span></div><div class="bb-tools">${tools}</div></div><div class="panel za-empty">${esc(msg)}</div>`;return;
+  }
+  const S_=ACC.list.map(id=>({id,dv:ACC.devs[id],s:accStats(ACC.devs[id])}));
+  const T={tot:0,used:0,free:0,down:0,freeBy:{}};S_.forEach(({s})=>{T.tot+=s.tot;T.used+=s.used;T.free+=s.free;T.down+=s.down;for(const k in s.freeBy)T.freeBy[k]=(T.freeBy[k]||0)+s.freeBy[k]});
+  const downs=S_.filter(x=>x.s.down),full=S_.filter(x=>x.s.lvl==='red');
+  let h=`<div class="bb-bar"><div class="acc-h"><b>ACC devices</b><span>${ACC.list.length} devices · ${fmtN(T.tot)} ports · yellow from 80% used, red from 90%</span></div><div class="bb-tools">${tools}</div></div>`;
+  if(downs.length||full.length){
+    h+=`<div class="acc-flag" role="alert"><span class="fl" aria-hidden="true">⚑</span><div><b>${[T.down?T.down+' port'+(T.down>1?'s':'')+' down':'',full.length?full.length+' device'+(full.length>1?'s':'')+' at 90% or more':''].filter(Boolean).join(' · ')}</b>
+      <div class="chips">${downs.map(x=>`<button type="button" class="chip" data-acc-dev="${esc(x.id)}" data-acc-f="down">${esc(x.dv.name)} <em>${x.s.down} down</em></button>`).join('')}${full.filter(x=>!x.s.down).map(x=>`<button type="button" class="chip" data-acc-dev="${esc(x.id)}">${esc(x.dv.name)} <em>${Math.round(x.s.pct)}% used</em></button>`).join('')}</div></div></div>`;
+  }
+  h+=`<div class="acc-kpis"><div class="acc-kpi"><div class="k">Ports</div><div class="v">${fmtN(T.tot)}</div><div class="s">${ACC.list.length} devices</div></div>
+    <div class="acc-kpi"><div class="k">Used</div><div class="v">${fmtN(T.used)}</div><div class="s">${T.tot?Math.round(T.used/T.tot*100):0}% of all ports</div></div>
+    <div class="acc-kpi"><div class="k">Free</div><div class="v">${fmtN(T.free)}</div><div class="s">${accTypes(T.freeBy)||'—'}</div></div>
+    <div class="acc-kpi${T.down?' bad':''}"><div class="k">Down</div><div class="v">${fmtN(T.down)}</div><div class="s">${downs.length?downs.length+' device'+(downs.length>1?'s':''):'none'}</div></div></div>`;
+  h+='<div class="acc-devs">'+S_.map(({id,dv,s})=>`<button type="button" class="acc-dev" data-acc-dev="${esc(id)}" data-lvl="${s.lvl}" aria-pressed="${ACC.sel===id}">
+      <span class="acc-top"><b>${esc(dv.name)}</b>${s.down?`<span class="acc-dn">${s.down} down</span>`:''}</span>
+      <span class="acc-pc">${Math.round(s.pct)}<small>%</small></span>
+      <span class="acc-bar"><span style="width:${s.pct.toFixed(1)}%"></span></span>
+      <span class="acc-ln">${s.used} of ${s.tot} used · <b>${s.free} free</b></span>
+      <span class="acc-ln mute">${accTypes(s.freeBy)?'Free: '+accTypes(s.freeBy):'No free ports'}</span></button>`).join('')+'</div>';
+  const id=ACC.sel||ACC.list[0],dv=ACC.devs[id],s=accStats(dv);
+  const q=ACC.q.trim().toLowerCase(),f=ACC.filter;
+  const match=x=>(f==='all'||(f==='free'&&accFree(x))||(f==='used'&&!accFree(x))||(f==='down'&&accDown(x)))&&(!q||[x.p,x.t,x.d,x.n].join(' ').toLowerCase().includes(q));
+  const ps=dv.ports||[],shown=ps.map((x,i)=>({x,i})).filter(o=>match(o.x));
+  const slots=[];ps.forEach((x,i)=>{const k=accSlot(x.p);let g=slots[slots.length-1];if(!g||g.k!==k){g={k,items:[]};slots.push(g)}g.items.push({x,i})});
+  const tile=({x,i})=>{const st=accDown(x)?'down':accFree(x)?'free':/backup/i.test(x.n||'')?'backup':'used';return `<button type="button" class="pt" data-st="${st}" data-acc-port="${i}"${match(x)?'':' data-dim="1"'} title="${esc(x.p+' · '+(x.t||'')+' · '+(x.d||'free')+(x.n?' · '+x.n:''))}">${esc(accShort(x.p))}<small>${esc(x.t||'')}</small></button>`};
+  h+=`<section class="panel acc-detail" data-lvl="${s.lvl}"><div class="phead"><div><h2>${esc(dv.name)}</h2><div class="sub">${s.tot} ports · ${s.used} used (${Math.round(s.pct)}%) · ${s.free} free${s.down?' · <span style="color:var(--down);font-weight:600">'+s.down+' down</span>':''}${adm?' · tap a port to edit':''}</div></div>
+    <div class="acc-tools"><div class="seg" role="group" aria-label="Show">${[['all','All'],['used','Used'],['free','Free'],['down','Down']].map(([k,l])=>`<button class="seg-btn" type="button" data-acc-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</div>
+    <input type="search" id="accQ" placeholder="Search port or ISP" value="${esc(ACC.q)}" aria-label="Search ports">${adm?`<button class="btn small" type="button" id="accNewPort">+ Port</button><button class="btn small" type="button" id="accEditDev">Device</button>`:''}</div></div>
+    <div class="acc-legend"><span><i data-st="used"></i>Used</span><span><i data-st="backup"></i>Backup</span><span><i data-st="free"></i>Free</span><span><i data-st="down"></i>Down</span></div>
+    <div class="acc-map">${slots.map(g=>`<div class="slot"><span class="sl">${esc(g.k||'—')}</span><div class="pts">${g.items.map(tile).join('')}</div></div>`).join('')}</div>
+    <div class="scroll"><table class="za-tbl acc-tbl"><thead><tr><th>Port</th><th>Type</th><th>Connected to</th><th>Note</th></tr></thead><tbody>
+    ${shown.map(({x,i})=>`<tr${adm?` class="za-edit" data-acc-port="${i}" tabindex="0"`:''}${accDown(x)?' data-st="down"':''}><td class="mono">${esc(x.p)}</td><td>${esc(x.t||'')}</td><td${x.d?'':' class="mute"'}>${x.d?esc(x.d):'Free'}</td><td>${accDown(x)?'<span class="dnb">DOWN</span> ':''}${esc((x.n||'').replace(/\bdown\b/i,'').trim())}</td></tr>`).join('')||'<tr><td colspan="4" class="mute">No ports match.</td></tr>'}
+    </tbody></table></div></section>`;
+  const qf=document.activeElement&&document.activeElement.id==='accQ',cp=qf?document.activeElement.selectionStart:0;
+  box.innerHTML=h;
+  if(qf){const e=$('#accQ');e.focus();try{e.setSelectionRange(cp,cp)}catch(_){}}
+}
+async function accSave(id,dv){if(!db)throw new Error('offline');await db.doc(ACC_COL+'/'+id).set({name:dv.name,order:dv.order??999,ports:dv.ports,updatedAt:Date.now()})}
+const accCur=()=>ACC.sel||ACC.list[0];
+function accOpenPort(i){
+  if(!canWrite)return;const id=accCur(),dv=ACC.devs[id];if(!dv)return;
+  const edit=i!=null,x=edit?dv.ports[i]:{p:'',t:'',d:'',n:''};
+  openSheet('accPortSheet');
+  $('#apTitle').textContent=edit?dv.name+' · '+x.p:'New port on '+dv.name;
+  $('#apIdx').value=edit?i:'';$('#apPort').value=x.p;$('#apPort').readOnly=edit;
+  $('#apType').value=x.t||'';$('#apDesc').value=x.d||'';
+  $('#apDown').checked=/\bdown\b/i.test(x.n||'');$('#apNote').value=(x.n||'').replace(/\bdown\b/i,'').replace(/\s+/g,' ').trim();
+  $('#apTypes').innerHTML=[...new Set(ACC.list.flatMap(k=>ACC.devs[k].ports.map(y=>y.t)).filter(Boolean))].map(t=>`<option value="${esc(t)}">`).join('');
+  $('#apDescs').innerHTML=[...new Set(ACC.list.flatMap(k=>ACC.devs[k].ports.map(y=>y.d)).filter(Boolean))].sort().map(t=>`<option value="${esc(t)}">`).join('');
+  $('#apDel').hidden=!edit;
+  (edit?$('#apDesc'):$('#apPort')).focus();
+}
+async function accSavePort(){
+  const id=accCur(),dv=ACC.devs[id];if(!dv)return;
+  const iv=$('#apIdx').value,p=clean($('#apPort').value),t=clean($('#apType').value),d=clean($('#apDesc').value).replace(/^\/$/,''),note=clean($('#apNote').value),dn=$('#apDown').checked;
+  if(!p){toast('Enter the port, like 1/1/c1');return}
+  const n=[dn?'DOWN':'',note].filter(Boolean).join(' ');
+  const ports=dv.ports.map(x=>({...x}));
+  if(iv===''){if(ports.some(x=>x.p.toLowerCase()===p.toLowerCase())){toast('That port is already on '+dv.name);return}ports.push({p,t,d,n})}
+  else ports[+iv]={p:ports[+iv].p,t,d,n};
+  if(await guard(()=>accSave(id,{...dv,ports}),'Saved')){closeSheets();ACC.devs[id]={...dv,ports};renderACC()}
+}
+async function accDelPort(){
+  const id=accCur(),dv=ACC.devs[id],iv=$('#apIdx').value;if(!dv||iv==='')return;
+  const p=dv.ports[+iv].p,ports=dv.ports.filter((_,k)=>k!==+iv);
+  if(await guard(()=>accSave(id,{...dv,ports}),'Port '+p+' removed')){closeSheets();ACC.devs[id]={...dv,ports};renderACC()}
+}
+function accOpenDev(edit){
+  if(!canWrite)return;const id=accCur(),dv=edit?ACC.devs[id]:null;
+  openSheet('accDevSheet');$('#adTitle').textContent=edit?'Edit device':'New device';
+  $('#adId').value=edit?id:'';$('#adName').value=edit?dv.name:'';$('#adDel').hidden=!edit;$('#adDelNote').hidden=!edit;
+  $('#adName').focus();
+}
+async function accSaveDev(){
+  const id0=$('#adId').value,name=clean($('#adName').value);if(!name){toast('Enter the device name');return}
+  if(id0){const dv=ACC.devs[id0];if(await guard(()=>accSave(id0,{...dv,name}),'Saved')){closeSheets();ACC.devs[id0]={...dv,name};accRebuild();renderACC()}return}
+  const id=accSlug(name);if(ACC.devs[id]){toast('That device already exists');return}
+  const dv={name,order:ACC.list.length,ports:[]};
+  if(await guard(()=>accSave(id,dv),'Device added. Tap “+ Port” to add its ports.')){closeSheets();ACC.devs[id]=dv;accRebuild();ACC.sel=id;renderACC()}
+}
+async function accDelDev(){
+  const id=$('#adId').value,dv=ACC.devs[id];if(!dv)return;
+  if(($('#adConfirm').value||'').trim()!==dv.name){toast('Type the device name to confirm');return}
+  if(await guard(async()=>{if(!db)throw new Error('offline');await db.doc(ACC_COL+'/'+id).delete()},dv.name+' deleted')){closeSheets();delete ACC.devs[id];accRebuild();renderACC()}
+}
+/* Excel: every sheet with a header row "Port | Port type | description | Note" is one device; the title above the header is its name */
+function accParse(wb){
+  const out=[];
+  wb.SheetNames.forEach((sn,si)=>{
+    const ws=wb.Sheets[sn];fillMerges(ws);const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:null});
+    let hi=-1,col=null,name=null;
+    for(let r=0;r<aoa.length;r++){const row=(aoa[r]||[]).map(c=>clean(c==null?'':String(c)).toLowerCase());
+      const pc=row.findIndex(c=>c==='port');if(pc<0)continue;const tc=row.findIndex(c=>/port\s*type/.test(c)),dc=row.findIndex(c=>/^des.?ription$|^description$/.test(c)),nc=row.findIndex(c=>c==='note'||c==='notes');
+      if(tc<0||dc<0)continue;hi=r;col={pc,tc,dc,nc};
+      for(let k=r-1;k>=0&&!name;k--){const v=(aoa[k]||[]).find(c=>c!=null&&String(c).trim());if(v)name=clean(String(v))}
+      break}
+    if(hi<0)return;
+    const ports=[],seen=new Set();
+    for(let r=hi+1;r<aoa.length;r++){const row=aoa[r]||[],p=clean(String(row[col.pc]??''));
+      if(!/^\d+\/\S+/.test(p)||seen.has(p.toLowerCase()))continue;seen.add(p.toLowerCase());
+      const d=clean(String(row[col.dc]??''));
+      ports.push({p,t:clean(String(row[col.tc]??'')),d:/^\/?$/.test(d)?'':d,n:col.nc>=0?clean(String(row[col.nc]??'')):''})}
+    if(ports.length)out.push({name:name||sn,sheet:sn,order:si,ports});
+  });
+  return out;
+}
+async function accHandle(files){
+  if(!canWrite)return;const msg=(t,e)=>{$('#accPending').innerHTML=t?`<div class="msg${e?' err':''}" role="status">${esc(t)}</div>`:''};
+  if(!window.XLSX){msg('The Excel reader did not load. Check your connection and reopen the page.',true);return}
+  msg('Reading…');let devs=[];
+  try{for(const f of files)devs=devs.concat(accParse(XLSX.read(await f.arrayBuffer(),{type:'array'})))}catch(e){msg('Could not read the file. Use a valid .xlsx file.',true);return}
+  if(!devs.length){msg('No device sheets found. Each sheet needs a header row with Port, Port type, description and Note.',true);return}
+  ACC.pending=devs;
+  $('#accPending').innerHTML=`<div class="msg"><b>${devs.length} device${devs.length>1?'s':''} ready</b><div class="sub">Each device replaces the one with the same name. Devices not in the file stay as they are.</div>
+    <div class="scroll"><table class="dtbl" style="margin-top:6px"><thead><tr><th>Device</th><th class="r">Ports</th><th class="r">Used</th><th class="r">Free</th><th class="r">Down</th><th></th></tr></thead><tbody>${devs.map(d=>{const s=accStats(d);return `<tr><td>${esc(d.name)}</td><td class="r num">${s.tot}</td><td class="r num">${s.used}</td><td class="r num">${s.free}</td><td class="r num">${s.down||''}</td><td>${ACC.devs[accSlug(d.name)]?'<span class="status gone">Replaces</span>':'<span class="status new">New</span>'}</td></tr>`}).join('')}</tbody></table></div>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn primary small" type="button" id="accCommit">Publish</button><button class="btn small" type="button" id="accCancel">Cancel</button></div></div>`;
+}
+async function accCommit(){
+  if(!ACC.pending||!canWrite)return;const btn=$('#accCommit');if(btn)btn.disabled=true;
+  try{if(!db)throw new Error('offline');const b=db.batch();
+    ACC.pending.forEach(d=>b.set(db.doc(ACC_COL+'/'+accSlug(d.name)),{name:d.name,order:d.order,ports:d.ports,updatedAt:Date.now()}));await b.commit();
+    const n=ACC.pending.length;ACC.pending=null;closeSheets();toast(n+' device'+(n>1?'s':'')+' published');
+  }catch(e){if(btn)btn.disabled=false;$('#accPending').insertAdjacentHTML('beforeend',`<div class="msg err">Could not save${e&&e.code?' ('+esc(e.code)+')':''}. Check your connection and try again.</div>`)}
+}
+
 /* firebase live data */
 const FIREBASE_CONFIG={apiKey:"AIzaSyC8jOeuxztPHCq6_gT60BYumlxyj4A-qck",authDomain:"iigw-capacity-console.firebaseapp.com",projectId:"iigw-capacity-console",storageBucket:"iigw-capacity-console.firebasestorage.app",messagingSenderId:"693181341723",appId:"1:693181341723:web:8f009444e6d075826198be"};
 /* Access model (enforced by Firestore rules, mirrored here):
    - every reader must be signed in AND have a document users/{uid} with role "viewer" or "admin"
    - only role "admin" can add, edit or delete data */
 const USERS='users';
-let auth=null,unsub=null,unsubZa=null,unsubBb=null,role=null;
+let auth=null,unsub=null,unsubZa=null,unsubBb=null,unsubAcc=null,role=null;
 function showGate(mode,msg){
   $('#gate').hidden=false;
   $('#gateForm').hidden=mode!=='signin';
@@ -2220,6 +2470,8 @@ function stopData(){
   if(unsub){try{unsub()}catch(_){}unsub=null}
   if(unsubZa){try{unsubZa()}catch(_){}unsubZa=null}
   if(unsubBb){try{unsubBb()}catch(_){}unsubBb=null}
+  if(unsubAcc){try{unsubAcc()}catch(_){}unsubAcc=null}
+  ACC.devs={};ACC.loaded=false;ACC.err=null;ACC.sel=null;accRebuild();
   bbReset();
   ZA.days={};ZA.loaded=false;ZA.err=null;zaRebuild();
   clearTimeout(loadTimer);loaded=false;DAYS={};canWrite=false;rebuild();
@@ -2227,6 +2479,10 @@ function stopData(){
 function startData(){
   setLive('connecting','Connecting');
   loadTimer=setTimeout(()=>{if(!loaded){setLive('offline','Not reachable');toast('Still trying to reach the live data...')}},10000);
+  if(canBackbone)unsubAcc=db.collection(ACC_COL).onSnapshot(snap=>{
+    const next={};snap.docs.forEach(d=>{const x=d.data();if(x&&Array.isArray(x.ports))next[d.id]={name:x.name||d.id,order:x.order,ports:x.ports}});
+    ACC.devs=next;ACC.loaded=true;ACC.err=null;accRebuild();if(S.view==='bb'&&BB.tab==='acc')renderACC();
+  },err=>{ACC.loaded=true;ACC.err=(err&&err.code)||'error';if(S.view==='bb')renderBBAll()});
   if(canBackbone)unsubBb=db.doc(BB_DOC).onSnapshot(d=>{
     const x=d.exists?(d.data()||{}):{};BB.loaded=true;BB.err=null;
     const url=typeof x.url==='string'?x.url:'';if(url!==BB.url){BB.url=url;BB.reach=null;BB.frameUrl=null}
@@ -2336,7 +2592,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-23.1';
+const APP_VERSION='2026-11-23.2';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;

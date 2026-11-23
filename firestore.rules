@@ -52,6 +52,12 @@ service cloud.firestore {
       allow write: if isAdmin() && (doc != 'backbone' || hasBackbone());
     }
 
+    // ACC port inventory (Backbone → ACC): one document per access device. Same people as the Backbone map.
+    match /acc/{device} {
+      allow read: if hasBackbone();
+      allow write: if isAdmin() && hasBackbone();
+    }
+
     // Each person may read only their own access record.
     // The only change they may make is clearing mustChangePassword after setting their own password;
     // role and everything else can only be changed in the Firebase console.
