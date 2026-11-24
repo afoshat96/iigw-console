@@ -545,6 +545,7 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 .za-tbl .r{text-align:right;font-family:var(--mono)}
 .za-tbl .mute{color:var(--ink-3)}
 .za-tbl tr.za-edit{cursor:pointer}.za-tbl tr.za-edit:hover td,.za-tbl tr.za-edit:focus-visible td{background:var(--line-2)}
+.btn.wa{display:inline-flex;align-items:center;gap:6px;color:#128C4A;border-color:color-mix(in srgb,#25D366 45%,transparent)}.btn.wa.primary{background:#25D366;color:#06301A;border-color:#25D366}
 .btn.danger{color:var(--down);border-color:color-mix(in srgb,var(--down) 40%,transparent)}
 .za-tbl tfoot td{font-weight:700;border-bottom:0}
 .za-tbl .splitbar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--line-2);min-width:90px}
@@ -686,6 +687,7 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
     </div>
     <div class="ctl-row">
       <button class="btn" id="exportBtn" type="button" hidden>Export Excel</button>
+      <button class="btn wa" id="waBtn" type="button" hidden><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="flex:none"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.7 11.7 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>WhatsApp</button>
       <button class="btn primary" id="openData" type="button" hidden>+ Add data</button>
     </div>
   </section>
@@ -877,6 +879,12 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
   </div>
 </section>
 
+<section class="sheet" id="waSheet" hidden role="dialog" aria-modal="true" aria-label="Send by WhatsApp">
+  <div class="sh-head"><h2>File ready</h2><button class="btn small" id="closeWa" type="button">Cancel</button></div>
+  <div class="sh-body"><p class="sub" style="margin:0"><b id="waName"></b> is ready. Tap Send, choose <b>WhatsApp</b>, then pick the chat.</p></div>
+  <div class="sh-foot"><span></span><button class="btn primary wa" id="waShareNow" type="button">Send</button></div>
+</section>
+
 <section class="sheet" id="zaDaySheet" hidden role="dialog" aria-modal="true" aria-label="New Zain and Asia day">
   <div class="sh-head"><h2>New Zain &amp; Asia day</h2><button class="btn small" id="closeZaDay" type="button">Cancel</button></div>
   <div class="sh-body">
@@ -1037,7 +1045,7 @@ const filterCount=()=>F.gates.size+F.types.size+F.isps.size+F.vias.size+(F.bill?
 const anyFilter=()=>filterCount()||F.search;
 function rangeText(){if(!DATES.length)return 'No data';return single()?dfull(F.from):dlab(F.from)+' to '+dfull(F.to)}
 
-function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{el.hidden=true},3200)}
+function toast(t,ms){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{el.hidden=true},ms||3200)}
 function setLive(state,label){$$('.live').forEach(el=>{el.dataset.state=state;$('span',el).textContent=label})}
 
 /* views + logos */
@@ -1067,7 +1075,7 @@ function logoTile(name){
 function render(){
   $('#rangeVal').textContent=rangeText();
   const fc=filterCount();$('#fcount').hidden=!fc;$('#fcount').textContent=fc;
-  $('#exportBtn').hidden=!(dl&&DATES.length&&canWrite);
+  $('#exportBtn').hidden=!(dl&&DATES.length&&canWrite);$('#waBtn').hidden=!(dl&&DATES.length&&canWrite);
   $('#openData').hidden=!canWrite;
   applyView();
   renderZaNav();
@@ -1387,7 +1395,8 @@ function actBtns(r){
   return `<button class="row-act" type="button" data-edit="${r.d}|${r.idx}">Edit</button> <button class="row-act" type="button" data-del="${r.d}|${r.idx}">Delete</button>`;
 }
 const billTag=r=>r.f?'<span class="bill free">Free</span>':'<span class="bill paid">Paid</span>';
-function exportBtnHTML(){return dl&&canWrite?'<button class="btn small" id="exportBtn2" type="button">Export Excel</button>':''}
+const WA_ICON='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="flex:none"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.7 11.7 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>';
+function exportBtnHTML(){return dl&&canWrite?'<button class="btn small" id="exportBtn2" type="button">Export Excel</button><button class="btn small wa" id="waBtn2" type="button">'+WA_ICON+'WhatsApp</button>':''}
 const ispFor=n=>S.ispF[n]||(S.ispF[n]={d:new Set(),g:new Set(),t:new Set()});
 function ispDetail(o,sel){
   const f=ispFor(o.i);
@@ -1694,7 +1703,7 @@ async function buildTemplateWorkbook(ExcelJS,rows,ZONES){
   return wb;
 }
 
-async function exportXlsx(){
+async function exportXlsx(wa){
   if(!canWrite){toast('Only admins can export to Excel.');return}
   const rows=getRows();
   if(!rows.length){toast('No records match the current filters');return}
@@ -1705,9 +1714,35 @@ async function exportXlsx(){
     const out=await wb.xlsx.writeBuffer();
     const ds=[...new Set(rows.map(r=>r.d))].sort();
     const tag=ds.length===1?ds[0]:ds[0]+'_to_'+ds[ds.length-1];
-    await dl.save({filename:`ISPs_Total_QoS_${tag}.xlsx`,data:new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})});
+    const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),fn=`ISPs_Total_QoS_${tag}.xlsx`;
+    if(wa){await waSend(fn,blob,'IIGW capacity · '+(ds.length===1?dfull(ds[0]):dlab(ds[0])+' to '+dlab(ds[ds.length-1])));return}
+    await dl.save({filename:fn,data:blob});
     toast('Export ready');
   }catch(e){if(!e||e.code!=='declined')toast('Could not export the file here')}
+}
+
+/* Send by WhatsApp: share the Excel file itself through the system share sheet (pick WhatsApp there).
+   wa.me links can only carry text, so where the browser cannot share files we download the file and open WhatsApp Web to attach it. */
+let WA_PENDING=null;
+async function waSend(filename,blob,title){
+  let file=null;try{file=new File([blob],filename,{type:blob.type})}catch(_){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    WA_PENDING={file,title};
+    try{await navigator.share({files:[file],title});WA_PENDING=null;return}
+    catch(e){
+      if(e&&e.name==='AbortError'){WA_PENDING=null;return}
+      if(e&&e.name==='NotAllowedError'){openSheet('waSheet');$('#waName').textContent=filename;return}
+    }
+  }
+  WA_PENDING=null;
+  await dl.save({filename,data:blob});
+  window.open('https://web.whatsapp.com/','_blank','noopener');
+  toast('File downloaded. In WhatsApp, open the chat and attach '+filename,6000);
+}
+async function waShareNow(){
+  const p=WA_PENDING;if(!p){closeSheets();return}
+  try{await navigator.share({files:[p.file],title:p.title});WA_PENDING=null;closeSheets()}
+  catch(e){if(e&&e.name==='AbortError'){closeSheets();return}WA_PENDING=null;closeSheets();toast('Sharing is not available here. Use Export Excel and attach the file in WhatsApp.')}
 }
 
 /* import */
@@ -1935,6 +1970,9 @@ document.addEventListener('click',e=>{
   if(canWrite&&(el=t.closest('[data-za-edit]'))){zaOpenRec(el.dataset.zaEdit);return}
   if(t.closest('#closeZa')){closeSheets();return}
   if(t.closest('#zaExport')){zaExport();return}
+  if(t.closest('#zaWa')){zaExport(true);return}
+  if(t.closest('#waShareNow')){waShareNow();return}
+  if(t.closest('#closeWa')){closeSheets();return}
   if(t.closest('#zaCommit')){zaCommit();return}
   if(t.closest('#zaCancel')){zaPending=null;zaMsg('');return}
   if(el=t.closest('[data-za-step]')){zaStep(+el.dataset.zaStep);return}
@@ -1944,6 +1982,7 @@ document.addEventListener('click',e=>{
   if(el=t.closest('[data-za-chart] svg')){const w=el.parentNode.dataset.zaChart.split(','),r=el.getBoundingClientRect(),k=Math.round((e.clientX-r.left)/r.width*(w.length-1));if(w[k]){ZA.sel=w[k];render()}return}
   if(t.closest('#closeData')){closeSheets();return}
   if(t.closest('#exportBtn')||t.closest('#exportBtn2')){exportXlsx();return}
+  if(t.closest('#waBtn')||t.closest('#waBtn2')){exportXlsx(true);return}
   if(t.closest('#moreRec')){S.recLimit+=60;renderTabs();return}
   if(t.closest('#commit')){commit();return}
   if(t.closest('#cancelAdd')){pending=null;showMsg('');return}
@@ -2002,7 +2041,7 @@ const gb=v=>fmtN(v);
 const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'0%';
 function renderZA(){
   const box=$('#zaBox');
-  const acts=canWrite?`<div class="za-acts">${ZA.dates.length?'<button class="btn" type="button" id="zaExport">Export '+MON[+zaDay().slice(5,7)-1]+' Excel</button>':''}${ZA.dates.length?'<button class="btn" type="button" id="zaNewDay">New day</button><button class="btn" type="button" id="zaNewRec">New record</button>':''}<button class="btn primary" type="button" id="zaAdd">+ Add Zain &amp; Asia data</button></div>`:'';
+  const acts=canWrite?`<div class="za-acts">${ZA.dates.length?'<button class="btn" type="button" id="zaExport">Export '+MON[+zaDay().slice(5,7)-1]+' Excel</button><button class="btn wa" type="button" id="zaWa">'+WA_ICON+'WhatsApp</button>':''}${ZA.dates.length?'<button class="btn" type="button" id="zaNewDay">New day</button><button class="btn" type="button" id="zaNewRec">New record</button>':''}<button class="btn primary" type="button" id="zaAdd">+ Add Zain &amp; Asia data</button></div>`:'';
   if(!ZA.dates.length){
     const msg=!db?'Live data is not available here.':!ZA.loaded?'Connecting to live data...':ZA.err?'Zain & Asia data is not shared with this account yet ('+ZA.err+').':canWrite?'No Zain & Asia data yet. Tap “+ Add Zain & Asia data” and choose the Excel file.':'No Zain & Asia data has been added yet.';
     box.innerHTML=`<div class="za-bar"><span></span>${acts}</div><div class="panel za-empty">${esc(msg)}</div>`;return;
@@ -2176,7 +2215,7 @@ async function zaDelRec(){
 function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
 const MONL=['January','February','March','April','May','June','July','August','September','October','November','December'];
 /* Excel export in the same layout as the team's "Zain & Asia" workbook: one sheet per day of the month on screen */
-async function zaExport(){
+async function zaExport(wa){
   if(!canWrite){toast('Only admins can export to Excel.');return}
   if(!ZA.dates.length)return;
   if(!window.ExcelJS){toast('The Excel library did not load. Check your connection.');return}
@@ -2210,7 +2249,9 @@ async function zaExport(){
     }
     wb.views=[{x:0,y:0,width:19420,height:10300,firstSheet:0,activeTab:days.length-1,visibility:'visible'}];
     const out=await wb.xlsx.writeBuffer();
-    await dl.save({filename:`Zain & Asia - ${MN} ${Y}.xlsx`,data:new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})});
+    const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),fn=`Zain & Asia - ${MN} ${Y}.xlsx`;
+    if(wa){await waSend(fn,blob,'Zain & Asia · '+MN+' '+Y);return}
+    await dl.save({filename:fn,data:blob});
     toast('Export ready: '+MN+' '+Y+' · '+days.length+' day'+(days.length===1?'':'s'));
   }catch(e){toast('Could not export the file here')}
 }
@@ -2592,7 +2633,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-24.1';
+const APP_VERSION='2026-11-24.2';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;
