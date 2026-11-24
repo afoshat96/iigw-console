@@ -15,7 +15,7 @@
  *     stale-while-revalidate: instant from cache, refreshed in the background.
  *   - Firebase data, sign-in and Google APIs are never cached or touched here.
  */
-const VERSION = '2026-11-23.2';
+const VERSION = '2026-11-24.1';
 const APP_CACHE = 'iigw-app-' + VERSION;
 const CDN_CACHE = 'iigw-cdn-v1';
 

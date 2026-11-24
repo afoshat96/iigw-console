@@ -742,7 +742,7 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
   </div>
 
   <section class="panel" data-v="overview">
-    <div class="phead"><h2>Gate by service</h2><span class="sub">Gb/s in the active range. Tap a cell to isolate it.</span></div>
+    <div class="phead"><h2>Gate by service</h2><span class="sub">Mb/s in the active range. Tap a cell to isolate it.</span></div>
     <div class="scroll" id="heat"></div>
   </section>
 
@@ -989,8 +989,8 @@ const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clean=s=>String(s==null?'':s).replace(/\s+/g,' ').trim();
-const fmtN=v=>(Math.round(v*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
-function rate(v){const a=Math.abs(v);if(a>=1e6)return (v/1e6).toFixed(2)+' Tb/s';if(a>=1e3)return (v/1e3).toFixed(a>=1e5?0:1)+' Gb/s';return fmtN(v)+' Mb/s'}
+const fmtN=v=>Number(v).toLocaleString('en-US',{maximumFractionDigits:3}); /* exact, no rounding to whole units */
+function rate(v){return fmtN(v)+' Mb/s'}
 function axisFmt(v){if(v>=1e6)return (v/1e6).toFixed(2)+'T';if(v>=1e3)return Math.round(v/1e3).toLocaleString('en-US')+'G';return Math.round(v)+'M'}
 const dlab=d=>{const p=d.split('-');return +p[2]+' '+MON[+p[1]-1]};
 const dfull=d=>{const p=d.split('-');return +p[2]+' '+MON[+p[1]-1]+' '+p[0]};
@@ -1176,7 +1176,7 @@ function renderKPIs(){
   const isps=new Set(rows.filter(r=>r.c>0).map(r=>r.i)),gates=new Set(rows.map(r=>r.g));
   const gm=[...group(rows,'g')].sort((a,b)=>b[1]-a[1])[0],tm=[...group(rows,'t')].sort((a,b)=>b[1]-a[1])[0];
   const k=(l,v,s)=>`<div class="kpi"><div class="k">${l}</div>${v}<div class="s">${s}</div></div>`;
-  const pv=rate(tot).split(' '),fr=sum(rows.filter(r=>r.f));
+  const pv=[fmtN(tot),'Mb/s'],fr=sum(rows.filter(r=>r.f));
   /* hero: total + change pill + sparkline of daily totals */
   let heroPill='',spark='';
   {
@@ -1196,7 +1196,7 @@ function renderKPIs(){
     }else delta='<div class="v num">&ndash;</div><div class="s">Earliest day loaded</div>';
   }
   $('#kpis').innerHTML=
-    `<div class="kpi"><div class="k">Total capacity · ${esc(rangeText())}</div><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><div class="v num">${pv[0]}<small>${pv[1]}</small></div>${heroPill}</div><div class="s">${fmtN(tot)} Mb/s · ${tot?(fr/tot*100).toFixed(1):0}% free</div>${spark}</div>`+
+    `<div class="kpi"><div class="k">Total capacity · ${esc(rangeText())}</div><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><div class="v num">${pv[0]}<small>${pv[1]}</small></div>${heroPill}</div><div class="s">${fmtN(fr)} Mb/s free · ${tot?(fr/tot*100).toFixed(1):0}%</div>${spark}</div>`+
     `<div class="kpi"><div class="k">Vs previous day</div>${delta}</div>`+
     k('ISPs',`<div class="v num">${isps.size}</div>`,rows.length+' records')+
     k('Gates',`<div class="v num">${gates.size}</div>`,gm?'Top '+esc(gm[0])+', '+rate(gm[1]):'None')+
@@ -1247,12 +1247,12 @@ function renderDays(){
   const Y=v=>m.t+(1-v/sc.top)*(H-m.t-m.b);
   let g='';
   for(let v=0;v<=sc.top+sc.step/2;v+=sc.step){const y=Y(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" style="stroke:var(--line-2)"/><text x="${m.l-6}" y="${y+4}" text-anchor="end">${axisFmt(v)}</text>`}
-  const showVal=slot>=40,xstep=Math.max(1,Math.ceil(46/slot));
+  const showVal=slot>=72,xstep=Math.max(1,Math.ceil(46/slot));
   let bars='',lastLx=-1e9;
   dates.forEach((d,i)=>{
     const cx=m.l+slot*(i+.5),v=vals[i],y=Y(v),inR=d>=F.from&&d<=F.to;
     bars+=`<rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${Math.max(0,H-m.b-y)}" style="fill:${inR?'var(--accent)':'color-mix(in srgb,var(--accent) 38%,var(--surface))'}"/>`;
-    if(showVal||(d===F.to&&F.from===F.to))bars+=`<text x="${cx}" y="${y-6}" text-anchor="middle" style="fill:var(--ink-2)">${v>=1e6?(v/1e6).toFixed(2)+'T':axisFmt(v)}</text>`;
+    if(showVal||(d===F.to&&F.from===F.to)){const lw=fmtN(v).length*6.4,an=cx+lw/2>W-m.r?'end':cx-lw/2<m.l?'start':'middle',lx=an==='end'?W-m.r:an==='start'?m.l:cx;bars+=`<text x="${lx}" y="${y-6}" text-anchor="${an}" style="fill:var(--ink-2)">${fmtN(v)}</text>`}
     if((i%xstep===0||i===dates.length-1)&&cx-lastLx>=48){bars+=`<text x="${cx}" y="${H-9}" text-anchor="${cx>W-26?'end':'middle'}">${dlab(d)}</text>`;lastLx=cx}
     bars+=`<rect data-bar="${d}" x="${m.l+slot*i}" y="${m.t}" width="${slot}" height="${H-m.t-m.b}" fill="transparent" style="cursor:pointer"><title>${dfull(d)}: ${rate(v)}</title></rect>`;
   });
@@ -1361,7 +1361,7 @@ function renderHeat(){
       const v=cell.get(g+'\u0001'+t);
       if(!v){h+='<td><span class="hcell empty">&middot;</span></td>';continue}
       const pct=8+80*Math.sqrt(v/mx),sel=F.gates.has(g)&&F.types.has(t),gb=v/1000;
-      h+=`<td><button class="hcell num${sel?' sel':''}" type="button" data-cell="1" data-g="${esc(g)}" data-t="${esc(t)}" aria-label="${esc(g+' '+t+' '+rate(v))}" style="background:color-mix(in srgb,var(--accent) ${pct.toFixed(0)}%,var(--surface));${pct>52?'color:var(--on-accent)':''}">${gb>=1?Math.round(gb).toLocaleString('en-US'):'&lt;1'}</button></td>`;
+      h+=`<td><button class="hcell num${sel?' sel':''}" type="button" data-cell="1" data-g="${esc(g)}" data-t="${esc(t)}" aria-label="${esc(g+' '+t+' '+rate(v))}" style="background:color-mix(in srgb,var(--accent) ${pct.toFixed(0)}%,var(--surface));${pct>52?'color:var(--on-accent)':''}">${fmtN(v)}</button></td>`;
     }
     h+='</tr>';
   }
@@ -1578,7 +1578,7 @@ async function buildTemplateWorkbook(ExcelJS,rows,ZONES){
   const REVZ={};Object.keys(ZONES).forEach(k=>REVZ[ZONES[k]]='ZONE '+k);
   const t1=r=>{if(r.o)return r.o;const i=REVZ[r.i]||r.i;return r.v?i+'\nOVER '+r.v:i};
   const FREEP=/FREE/i,cleanSec=x=>String(x).replace(/_[^_]*_?\s*\d{4}\s*$/,'').trim();
-  const fmtTot=v=>(Math.round(v*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
+  const fmtTot=fmtN;
 
   const dates=[...new Set(rows.map(r=>r.d))].sort();
   const byD={};rows.forEach(r=>{(byD[r.d]=byD[r.d]||[]).push(r)});
@@ -1998,7 +1998,7 @@ const zaRows=d=>(ZA.days[d]?ZA.days[d].rows:[]).map(r=>({n:r.n,z:+r.z||0,a:+r.a|
 const zaSum=(d,k)=>zaRows(d).reduce((x,r)=>x+r[k],0);
 function zaStep(dir){const i=ZA.dates.indexOf(zaDay()),j=i+dir;if(j>=0&&j<ZA.dates.length){ZA.sel=ZA.dates[j];render()}}
 function renderZaNav(){const el=$('#navZa');if(el)el.textContent=ZA.dates.length?ZA.dates.length+'d':''}
-const gb=v=>(v/1000).toFixed(2);
+const gb=v=>fmtN(v);
 const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'0%';
 function renderZA(){
   const box=$('#zaBox');
@@ -2016,15 +2016,15 @@ function renderZA(){
   let h=`<div class="za-bar"><div class="za-step" role="group" aria-label="Day"><button type="button" data-za-step="-1" aria-label="Previous day"${i<=0?' disabled':''}>‹</button><span>${dfull(d)}</span><button type="button" data-za-step="1" aria-label="Next day"${i>=ZA.dates.length-1?' disabled':''}>›</button></div>${acts}</div>`;
   h+=`<div class="za-seg" role="group" aria-label="Show">${['Total','Zain','Asia'].map(l=>`<button type="button" data-za-mob="${l}" aria-pressed="${ZA.mob===l}" style="--c:${segC[l]}">${l==='Total'?'Zain + Asia':l}</button>`).join('')}</div>`;
   const hv=ZA.mob==='Zain'?Z:ZA.mob==='Asia'?A:T,hp=ZA.mob==='Zain'?pZ:ZA.mob==='Asia'?pA:(p?pZ+pA:null),hd=hp==null?0:hv-hp;
-  h+=`<section class="za-hero" aria-label="Total"><div><div class="k">${ZA.mob==='Total'?'Zain + Asia total':ZA.mob+' total'}</div><div class="big">${gb(hv)}<small>Gb/s</small></div>
+  h+=`<section class="za-hero" aria-label="Total"><div><div class="k">${ZA.mob==='Total'?'Zain + Asia total':ZA.mob+' total'}</div><div class="big">${gb(hv)}<small>Mb/s</small></div>
     <div class="meta"><span class="pill ${hd>0?'up':hd<0?'dn':'flat'}">${hp==null?'first day':sgn(hd)+' Mb/s'}</span><span>${fmtN(hv)} Mb/s · ${rows.length} companies</span></div></div>
     <div class="za-split"><div class="za-sbar" role="img" aria-label="Zain ${pct(Z,T)}, Asia ${pct(A,T)}"><span style="width:${(Z/T*100).toFixed(2)}%;background:var(--zain-l)"></span><span style="width:${(A/T*100).toFixed(2)}%;background:var(--asia-l)"></span></div>
-    <div class="za-leg">${OPS.map(o=>`<span><i style="background:${o.cl}"></i>${opLogo(o,22)}<b>${o.name}</b><span class="v">${(tot[o.k]/1000).toFixed(1)} Gb/s · ${pct(tot[o.k],T)}</span></span>`).join('')}</div></div></section>`;
+    <div class="za-leg">${OPS.map(o=>`<span><i style="background:${o.cl}"></i>${opLogo(o,22)}<b>${o.name}</b><span class="v">${fmtN(tot[o.k])} Mb/s · ${pct(tot[o.k],T)}</span></span>`).join('')}</div></div></section>`;
   // operator cards
   h+='<div class="za-ops">'+OPS.map(o=>{
     const rs=rows.filter(r=>r[o.k]>0).sort((a,b)=>b[o.k]-a[o.k]),mx=rs.length?rs[0][o.k]:1,t=tot[o.k],df=ptot[o.k]==null?null:t-ptot[o.k];
     return `<section class="panel op ${o.cls}" style="--c:${o.c}"><div class="op-h"><div class="who">${opLogo(o,44)}<div><h2>${o.name}</h2><div class="sub">${rs.length} compan${rs.length===1?'y':'ies'} · ${pct(t,T)} of total</div></div></div>
-      <div><div class="tot">${gb(t)}<small>Gb/s</small></div><div class="d ${df>0?'up':df<0?'dn':''}">${df==null?'first day':sgn(df)+' vs '+dlab(p)}</div></div></div>
+      <div><div class="tot">${gb(t)}<small>Mb/s</small></div><div class="d ${df>0?'up':df<0?'dn':''}">${df==null?'first day':sgn(df)+' vs '+dlab(p)}</div></div></div>
       <div class="op-rows">${rs.map(r=>`<div class="op-row"><span class="nm">${logoTile(r.n)}<span>${esc(r.n)}</span></span><span class="track"><span style="width:${Math.max(1.5,r[o.k]/mx*100).toFixed(1)}%"></span></span><span class="val">${fmtN(r[o.k])}<small>${pct(r[o.k],t)}</small></span></div>`).join('')||'<div class="sub" style="padding:10px 0">No companies on '+o.name+' this day.</div>'}</div>
       <div class="op-foot"><span>Total ${o.name}</span><span>${fmtN(t)} Mb/s</span></div></section>`}).join('')+'</div>';
   // chart + changes
@@ -2592,7 +2592,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-23.2';
+const APP_VERSION='2026-11-24.1';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;
