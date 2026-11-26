@@ -545,6 +545,11 @@ body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 .za-tbl .r{text-align:right;font-family:var(--mono)}
 .za-tbl .mute{color:var(--ink-3)}
 .za-tbl tr.za-edit{cursor:pointer}.za-tbl tr.za-edit:hover td,.za-tbl tr.za-edit:focus-visible td{background:var(--line-2)}
+.adj{margin-top:8px;display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:10px;padding:9px 10px;background:var(--line-2)}
+.adj[hidden]{display:none}.adj-l{font-size:12px;font-weight:600;color:var(--ink-3)}
+.adj-row{display:grid;grid-template-columns:44px 1fr 44px;gap:6px}.adj-b{font-size:18px;font-weight:700;padding:0;min-height:40px}
+.adj-in{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--surface);color:var(--ink);font-family:var(--mono);min-width:0}
+.adj-note{font-size:12.5px;color:var(--ink-3)}.adj-note b{font-family:var(--mono);color:var(--ink)}.adj-note .up{color:var(--up);font-weight:600}.adj-note .dn{color:var(--down);font-weight:600}
 .btn.wa{display:inline-flex;align-items:center;gap:6px;color:#128C4A;border-color:color-mix(in srgb,#25D366 45%,transparent)}.btn.wa.primary{background:#25D366;color:#06301A;border-color:#25D366}
 .btn.danger{color:var(--down);border-color:color-mix(in srgb,var(--down) 40%,transparent)}
 .za-tbl tfoot td{font-weight:700;border-bottom:0}
@@ -815,7 +820,7 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
     <div class="field"><label for="mIsp">ISP</label><input type="text" id="mIsp" placeholder="EARTHLINK, HORIZON"></div>
     <div class="field"><label for="mVia">Upstream (leave blank for Direct)</label><input type="text" id="mVia" placeholder="TAURUS"></div>
     <div class="field"><label for="mType">Service type (include FREE if it is a free service)</label><input type="text" id="mType" placeholder="FTTH, WIFI, BTB"></div>
-    <div class="field"><label for="mCap">Capacity (Mb/s)</label><input type="number" step="any" inputmode="decimal" id="mCap"></div>
+    <div class="field"><label for="mCap">Capacity (Mb/s)</label><input type="number" step="any" inputmode="decimal" id="mCap"><div class="adj" data-adj-box="mCap" hidden><span class="adj-l">Add or subtract</span><div class="adj-row"><button class="btn small adj-b" type="button" data-adj="-" data-adj-for="mCap" aria-label="Subtract">&minus;</button><input type="number" step="any" min="0" inputmode="decimal" class="adj-in" data-adj-in="mCap" placeholder="Amount" aria-label="Amount to add or subtract"><button class="btn small adj-b" type="button" data-adj="+" data-adj-for="mCap" aria-label="Add">+</button></div><span class="adj-note" data-adj-note="mCap"></span></div></div>
   </form>
   <div class="sh-foot"><span></span><button class="btn primary" id="saveRecord" type="button">Save</button></div>
 </section>
@@ -901,9 +906,9 @@ a.btn{text-decoration:none;color:var(--ink)}a.btn.primary{color:var(--on-accent)
     <input type="hidden" id="zrMode">
     <div class="field" id="zrDateF"><label for="zrDate">Date</label><input type="date" id="zrDate"></div>
     <div class="field"><label for="zrName">Company</label><input type="text" id="zrName" list="zrNames" placeholder="EARTHLINK, HALA SAT" autocomplete="off"><datalist id="zrNames"></datalist></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="field"><label for="zrZ">Zain (Mb/s)</label><input type="number" step="any" min="0" inputmode="decimal" id="zrZ"></div>
-      <div class="field"><label for="zrA">Asia (Mb/s)</label><input type="number" step="any" min="0" inputmode="decimal" id="zrA"></div>
+    <div style="display:grid;grid-template-columns:1fr;gap:10px">
+      <div class="field"><label for="zrZ">Zain (Mb/s)</label><input type="number" step="any" min="0" inputmode="decimal" id="zrZ"><div class="adj" data-adj-box="zrZ" hidden><span class="adj-l">Add or subtract</span><div class="adj-row"><button class="btn small adj-b" type="button" data-adj="-" data-adj-for="zrZ" aria-label="Subtract">&minus;</button><input type="number" step="any" min="0" inputmode="decimal" class="adj-in" data-adj-in="zrZ" placeholder="Amount" aria-label="Amount to add or subtract"><button class="btn small adj-b" type="button" data-adj="+" data-adj-for="zrZ" aria-label="Add">+</button></div><span class="adj-note" data-adj-note="zrZ"></span></div></div>
+      <div class="field"><label for="zrA">Asia (Mb/s)</label><input type="number" step="any" min="0" inputmode="decimal" id="zrA"><div class="adj" data-adj-box="zrA" hidden><span class="adj-l">Add or subtract</span><div class="adj-row"><button class="btn small adj-b" type="button" data-adj="-" data-adj-for="zrA" aria-label="Subtract">&minus;</button><input type="number" step="any" min="0" inputmode="decimal" class="adj-in" data-adj-in="zrA" placeholder="Amount" aria-label="Amount to add or subtract"><button class="btn small adj-b" type="button" data-adj="+" data-adj-for="zrA" aria-label="Add">+</button></div><span class="adj-note" data-adj-note="zrA"></span></div></div>
     </div>
     <p class="sub" id="zrNote" style="margin:0"></p>
   </form>
@@ -1511,11 +1516,34 @@ function openRecord(mode,r){
   if(ro){
     $('#recKey').value=r.d+'|'+r.idx;
     $('#mGate').value=r.g;$('#mIsp').value=r.i;$('#mVia').value=r.v;$('#mType').value=r.t;$('#mCap').value=r.c;
+    adjSetup('mCap',r.c);
     $('#mCap').focus();
   }else{
+    adjSetup('mCap',null);
     $('#recKey').value='';$('#mDate').value=F.to||DATES[DATES.length-1]||'';
     ['mGate','mIsp','mVia','mType','mCap'].forEach(id=>{$('#'+id).value=''});
   }
+}
+
+/* add/subtract on an existing number: the field keeps the final value; the note shows was -> now */
+const ADJ_BASE={};
+function adjSetup(id,base){
+  const box=document.querySelector(`[data-adj-box="${id}"]`);if(!box)return;
+  const on=base!=null&&isFinite(base);box.hidden=!on;ADJ_BASE[id]=on?+base:null;
+  box.querySelector('.adj-in').value='';adjNote(id);
+}
+function adjNote(id){
+  const n=document.querySelector(`[data-adj-note="${id}"]`);if(!n)return;const b=ADJ_BASE[id],raw=$('#'+id).value,v=+raw;
+  if(b==null||raw===''||!isFinite(v)||v===b){n.innerHTML=b==null?'':'Was <b>'+fmtN(b)+'</b>';n.className='adj-note';return}
+  const d=Math.round((v-b)*1000)/1000;
+  n.innerHTML=`Was <b>${fmtN(b)}</b> → now <b>${fmtN(v)}</b> <span class="${d>0?'up':'dn'}">(${d>0?'+':'−'}${fmtN(Math.abs(d))})</span>`;n.className='adj-note on';
+}
+function adjApply(id,sign){
+  const inp=document.querySelector(`[data-adj-in="${id}"]`),amt=+inp.value;
+  if(inp.value===''||!isFinite(amt)||amt<=0){toast('Type the amount to add or subtract');inp.focus();return}
+  const cur=+($('#'+id).value||0),nv=Math.round((cur+(sign==='+'?amt:-amt))*1000)/1000;
+  if(nv<0){toast('That would go below zero');return}
+  $('#'+id).value=nv;inp.value='';adjNote(id);inp.focus();
 }
 
 /* writes */
@@ -1961,6 +1989,7 @@ document.addEventListener('click',e=>{
   if(t.closest('#adSave')){accSaveDev();return}
   if(t.closest('#adDel')){accDelDev();return}
   if(t.closest('#closeAp')||t.closest('#closeAd')||t.closest('#closeAcc')){closeSheets();return}
+  if(el=t.closest('[data-adj]')){adjApply(el.dataset.adjFor,el.dataset.adj);return}
   if(t.closest('#zaNewDay')){zaOpenNewDay();return}
   if(t.closest('#zaNewRec')){zaOpenRec(null);return}
   if(t.closest('#zaCreateDay')){zaCreateDay();return}
@@ -2008,8 +2037,8 @@ document.addEventListener('input',e=>{
   if(id==='recQ'){S.recQ=e.target.value;S.recLimit=60;renderTabs()}
   if(id==='chgQ'){S.chgQ=e.target.value;renderTabs()}
 });
-document.addEventListener('input',e=>{if(e.target.id==='accQ'){ACC.q=e.target.value;renderACC()}});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.accPort!=null&&e.target.tagName==='TR'){accOpenPort(+e.target.dataset.accPort);return}if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.zaEdit){zaOpenRec(e.target.dataset.zaEdit);return}if(e.key==='Escape'&&sheetOpen)closeSheets();else if(e.key==='Escape'&&BB.full)bbFull(false)});
+document.addEventListener('input',e=>{if(e.target.id==='accQ'){ACC.q=e.target.value;renderACC()}if(e.target.id in ADJ_BASE)adjNote(e.target.id)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.adjIn){e.preventDefault();adjApply(e.target.dataset.adjIn,'+');return}if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.accPort!=null&&e.target.tagName==='TR'){accOpenPort(+e.target.dataset.accPort);return}if(e.key==='Enter'&&!sheetOpen&&canWrite&&e.target.dataset&&e.target.dataset.zaEdit){zaOpenRec(e.target.dataset.zaEdit);return}if(e.key==='Escape'&&sheetOpen)closeSheets();else if(e.key==='Escape'&&BB.full)bbFull(false)});
 const drop=$('#drop');
 ['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over')}));
 ['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over')}));
@@ -2190,6 +2219,7 @@ function zaOpenRec(name){
   $('#zrDateF').hidden=edit;$('#zrDate').value=d;
   $('#zrName').value=edit?name:'';$('#zrName').readOnly=edit;
   $('#zrZ').value=edit?r.z:'';$('#zrA').value=edit?r.a:'';
+  adjSetup('zrZ',edit?r.z:null);adjSetup('zrA',edit?r.a:null);
   $('#zrNames').innerHTML=[...new Set(ZA.dates.slice(-60).flatMap(x=>ZA.days[x].rows.map(y=>y.n)))].sort().map(n=>`<option value="${esc(n)}">`).join('');
   $('#zrNote').textContent=edit?dfull(d)+'. Set both to 0 to take the company off this day.':'If the company is already on that day, its numbers are replaced.';
   $('#zaDelRec').hidden=!edit;
@@ -2633,7 +2663,7 @@ start();
 
 /* ---- PWA: install + keep every open copy on the latest version ----
    APP_VERSION must match VERSION in sw.js; change both on every deploy. */
-const APP_VERSION='2026-11-24.2';
+const APP_VERSION='2026-11-26.1';
 $('#appVer').textContent='Version '+APP_VERSION;
 (function pwa(){
   if(!('serviceWorker' in navigator))return;
